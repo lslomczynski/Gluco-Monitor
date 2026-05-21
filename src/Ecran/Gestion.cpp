@@ -140,6 +140,8 @@ void loopEcran()
             pageMessageDefilement(DeltaTouchY);
           if (PageActu == pageConfiguration && millis() - ClickLong > 300)
             pageConfigurationChoix(touchX, touchY, DeltaTouchX, DeltaTouchY);
+          if (PageActu == pageAccueil)
+            AccueilHandleTouch(touchX, touchY);
         }
       }
       else
@@ -620,7 +622,7 @@ void QuestionConfiguration(String Question, void (*fonctionSiOK)())
 void TraceEcranAccueil()
 {
   CanvaBase->fillRect(0, 0, EcranW, EcranH, RGB565_BLACK);
-  Trace_Gauge(CanvaBase);
+  Trace_Gauge(CanvaBase, EcranW / 2, EcranH / 2, (int)(EcranH / 3.5f), EcranH / 2 - 20);
   CanvaBase->setTextColor(RGB565_WHITE);
   CanvaBase->setFont(u8g2_font_fub35_tf);
   PrintCentre(CanvaBase, "Gluco-Monitor", EcranW2, EcranH2 - 10, 1);
