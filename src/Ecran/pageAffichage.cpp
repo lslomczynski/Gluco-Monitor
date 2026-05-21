@@ -13,8 +13,8 @@ static RadioBouton Rboutons[8] = {
     {10, 90, 15, "100%"},
     {10, 180, 15, "0°"},
     {10, 180, 15, "180°"},
-    {10, 270, 15, "Blanc"},
-    {10, 270, 15, "Couleur"}};
+    {10, 270, 15, T("Blanc")},
+    {10, 270, 15, T("Couleur")}};
 
 void DrawBoutons();
 

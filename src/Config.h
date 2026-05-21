@@ -65,7 +65,7 @@ extern int16_t pointCountGly;
 extern String Glycemie;
 extern int8_t TrendArrow;
 extern unsigned long lastGlyUnixTime;
-extern int16_t GlycemieVal, targetLow,targetHigh;
+extern int16_t GlycemieVal,glucoseRangeMin,targetLow,targetHigh,glucoseWarn,glucoseRangeMax;
 extern GlucoseUnit glucoseUnit;
 extern GlucoseColor glucoseColor;
 

@@ -92,6 +92,13 @@ void DeserializeConfiguration(String json) {
   // Couleur affichage glycémie
   int glucoseColorInt = conf["glucoseColor"] | GLUCOSE_BLANC;
   glucoseColor = (GlucoseColor)glucoseColorInt;
+
+  // Glucose thresholds (fall back to compile-time defaults if absent)
+  glucoseRangeMin = conf["glucoseRangeMin"] | glucoseRangeMin;
+  targetLow       = conf["targetLow"]       | targetLow;
+  targetHigh      = conf["targetHigh"]      | targetHigh;
+  glucoseWarn     = conf["glucoseWarn"]     | glucoseWarn;
+  glucoseRangeMax = conf["glucoseRangeMax"] | glucoseRangeMax;
 }
 
 String SerializeConfiguration() {
@@ -118,6 +125,13 @@ String SerializeConfiguration() {
   conf["glucoseUnit"] = (int) glucoseUnit;
   //Couleur affichage glycémie
   conf["glucoseColor"] = (int) glucoseColor;
+
+  // Glucose thresholds
+  conf["glucoseRangeMin"] = glucoseRangeMin;
+  conf["targetLow"]       = targetLow;
+  conf["targetHigh"]      = targetHigh;
+  conf["glucoseWarn"]     = glucoseWarn;
+  conf["glucoseRangeMax"] = glucoseRangeMax;
   
   String Json;
   serializeJson(conf, Json);

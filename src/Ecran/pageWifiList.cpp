@@ -10,6 +10,7 @@
 String Format2_WiFi(int num, const String &nom, int niveau);        // 
 static int nbWifi = 0, iSelected = -1; // Nombre de réseaux trouvés et index du réseau sélectionné
 static String ssidList[6]; // SSID du réseau sélectionné
+static String previousSsid = ""; // Backup of ssid before selection (restored on Cancel)
 
  
 static Bouton Boutons[6] = {};
@@ -61,8 +62,13 @@ void WifiListSetup()
 
     WiFi.scanDelete();
 
-   
+
     CanvaBase->flush();
+}
+
+void wifiRestorePreviousSsid()
+{
+    ssid = previousSsid; // undo the temporary ssid change if user presses Cancel
 }
 
 String Format2_WiFi(int num, const String &nom, int niveau)
@@ -78,13 +84,14 @@ void handleTouch_WifiList(uint16_t touchX, uint16_t touchY)
     {
         if (Bouton_Appui(Boutons[i], touchX, touchY)) {
             
-            Bouton_Trace(Boutons[i],RGB565_RED); 
+            Bouton_Trace(Boutons[i],RGB565_RED);
             delay(300) ;
-            ssid = String(ssidList[i]);
-            RecordFichierParametres();
+            previousSsid = ssid;           // backup — restored if user presses Cancel
+            ssid = String(ssidList[i]);    // set temporarily for keyboard title display
+            // RecordFichierParametres() is called only after OK is confirmed in pageClavier
             PageActu = pageClavier_WifiPwd;
-            setup_clavier(); 
-            return;       
+            setup_clavier();
+            return;
         } else {
             Bouton_Trace(Boutons[i]);
         }

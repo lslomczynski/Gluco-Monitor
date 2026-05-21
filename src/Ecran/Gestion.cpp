@@ -20,6 +20,7 @@
 #include "Ecran/pageLangue.h"
 #include "Ecran/pageAutBrute.h"
 #include "Ecran/pageAbout.h"
+#include "Ecran/pageGlucoseSettings.h"
 #include "Langues/Langue.h"
 
 //************Alternative declarations *******************************************
@@ -196,6 +197,9 @@ void loopEcran()
             break;
           case pageAbout:
             handleTouch_About(touchX, touchY, DeltaTouchY);
+            break;
+          case pageGlucoseSettings:
+            handleTouch_GlucoseSettings(touchX, touchY);
             break;
           }
         }

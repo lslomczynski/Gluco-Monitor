@@ -4,8 +4,6 @@ static const char *JS_Main = R"rawliteral(
 const cx = 150
 const cy = 150
 const r = 125
-let targetLow = 70;
-let targetHigh = 180;
 let Boucle1s = 0;
 let lastGlyUnixTime = 0;
 
@@ -30,18 +28,16 @@ function arc(start, end) {
 
 function setValue(v, unitLabel) { //Valeur de la Glycemie
     let x1, y1, x2, y2, x3, y3;
-    let angle = -90 + (v * 180 / 400);
+    let rangeSpan = glucoseRangeMax - glucoseRangeMin;
+    let angle = -90 + ((v - glucoseRangeMin) * 180 / rangeSpan);
     let angle1 = -90;
-    let angle2 = -90 + (targetLow * 180 / 400);
+    let angle2 = -90 + ((targetLow - glucoseRangeMin) * 180 / rangeSpan);
     GID("z1").setAttribute("d", arc(angle1, angle2));
     angle1 = angle2;
-    angle2 = -90 + (targetHigh * 180 / 400);
+    angle2 = -90 + ((targetHigh - glucoseRangeMin) * 180 / rangeSpan);
     GID("z2").setAttribute("d", arc(angle1, angle2));
     angle1 = angle2;
-    angle2 = -90 + (300 * 180 / 400);
-    if(glucoseUnit==1) { //mmol/L
-        angle2 = -90 + (16*18 * 180 / 400);
-    }
+    angle2 = -90 + ((glucoseWarn - glucoseRangeMin) * 180 / rangeSpan);
     GID("z3").setAttribute("d", arc(angle1, angle2));
     GID("z4").setAttribute("d", arc(angle2, 90));
 
@@ -113,40 +109,34 @@ function TraceGraphe(glucoseHeure,glucoseValues) {
 
     S += `<svg viewBox="0 0 550 220" id="SvgGraphe">`;
 
-    //==== Rectangles du fond ================
-    let TargetHigh = targetHigh;
-    let TargetLow = targetLow;
-    let Seuil400=400;
-    let Seuil300=300;
-    let H1 = H * 400 / 400;
-    let H2 = H * 300 / 400;
-    if(glucoseUnit==1) { //mmol/L
-        TargetHigh = targetHigh/18
-        TargetLow = targetLow/18;
-        TargetHigh=TargetHigh.toFixed(1);
-        TargetLow=TargetLow.toFixed(1);
-        Seuil400=22;
-        Seuil300=16;
-        H1 = H * Seuil400 * 18 / 400;
-        H2 = H * Seuil300 * 18 / 400;
-        Seuil400=Seuil400.toFixed(1);
-        Seuil300=Seuil300.toFixed(1);
+    //==== Rectangles du fond — bandes non chevauchantes (logique identique à pageAccueil.cpp seuilCoul) ====
+    let rangeSpan = glucoseRangeMax - glucoseRangeMin;
+    // Labels mmol/L si besoin (positions toujours en mg/dL)
+    let TargetHigh = targetHigh, TargetLow = targetLow;
+    let SeuilGlucoseWarn = glucoseWarn, SeuilGlucoseRangeMax = glucoseRangeMax;
+    if(glucoseUnit==1) {
+        TargetHigh           = (targetHigh    / 18).toFixed(1);
+        TargetLow            = (targetLow     / 18).toFixed(1);
+        SeuilGlucoseWarn     = (glucoseWarn   / 18).toFixed(1);
+        SeuilGlucoseRangeMax = (glucoseRangeMax / 18).toFixed(1);
     }
-    S += `<text  class="graduationD" x=${X0 - 10}   y=${Y0 - H + 5}  >` + Seuil400 + `</text>`;
-    S += `<line x1=${X0} y1=${Y0 - H1} x2=${X0-5} y2=${Y0 - H1} style="stroke:white;stroke-width:2" />`;
-    S += `<rect width=${W} height=${H1} x=${X0} y=${Y0 - H1}  fill="rgba(44, 1, 1, 0.8)" />`;
-    
-    S += `<text  class="graduationD" x=${X0 - 10}   y=${Y0 - H2 + 5}  >` + Seuil300 + `</text>`;
-    S += `<line x1=${X0} y1=${Y0 - H2} x2=${X0-5} y2=${Y0 - H2} style="stroke:white;stroke-width:2" />`;
-    S += `<rect width=${W} height=${H2} x=${X0} y=${Y0 - H2}  fill="rgba(56, 36, 1, 0.8)" />`;
-    H1 = H * targetHigh / 400;
-    S += `<text  class="graduationD" x=${X0 - 10}   y=${Y0 - H1 + 5}  >` + TargetHigh + `</text>`;
-    S += `<line x1=${X0} y1=${Y0 - H1} x2=${X0-5} y2=${Y0 - H1} style="stroke:white;stroke-width:2" />`;
-    S += `<rect width=${W} height=${H1} x=${X0} y=${Y0 - H1}  fill="rgba(0, 29, 0, 0.8)" />`;
-    H1 = H * targetLow / 400;
-    S += `<text  class="graduationD" x=${X0 - 10}   y=${Y0 - H1 + 6}  >` + TargetLow + `</text>`;
-    S += `<line x1=${X0} y1=${Y0 - H1} x2=${X0-5} y2=${Y0 - H1} style="stroke:white;stroke-width:2" />`;
-    S += `<rect width=${W} height=${H1} x=${X0} y=${Y0 - H1}  fill="rgba(0,0,64,0.8" />`;
+    // seuilCoul mirrors pageAccueil.cpp: {glucoseRangeMin, targetLow, targetHigh, glucoseWarn, glucoseRangeMax}
+    const seuilCoul  = [glucoseRangeMin, targetLow, targetHigh, glucoseWarn, glucoseRangeMax];
+    // Colours tuned for web (dark page #111): perceived luminance balanced across all bands
+    // device CouleursFond values (70,0,0 etc.) are too dark for a browser display
+    const bandColors = ["rgba(0,0,120,1)", "rgba(0,100,0,1)", "rgba(100,65,0,1)", "rgba(139,0,0,1)"];
+    const bandLabels = [null, TargetLow, TargetHigh, SeuilGlucoseWarn, SeuilGlucoseRangeMax];
+    for (let c = 0; c < 4; c++) {
+        let yBottom = Math.round(Y0 - H * (seuilCoul[c]   - glucoseRangeMin) / rangeSpan);
+        let yTop    = Math.round(Y0 - H * (seuilCoul[c+1] - glucoseRangeMin) / rangeSpan);
+        S += `<rect width=${W} height=${yBottom - yTop} x=${X0} y=${yTop} fill="${bandColors[c]}" />`;
+    }
+    // Tick marks + labels at each upper boundary (matches PrintDroite calls in pageAccueil.cpp)
+    for (let c = 1; c < seuilCoul.length; c++) {
+        let yPos = Math.round(Y0 - H * (seuilCoul[c] - glucoseRangeMin) / rangeSpan);
+        S += `<text class="graduationD" x=${X0-10} y=${yPos+5}>${bandLabels[c]}</text>`;
+        S += `<line x1=${X0} y1=${yPos} x2=${X0-5} y2=${yPos} style="stroke:white;stroke-width:2" />`;
+    }
     //========Courbe=================
     let Hdeb=glucoseHeure[0];
     let Hfin=glucoseHeure[glucoseHeure.length-1];
@@ -159,13 +149,14 @@ function TraceGraphe(glucoseHeure,glucoseValues) {
         let d,h;
         for (let i=0;i<glucoseHeure.length;i++){
             let gluco=glucoseValues[i];
-            Y=Math.round(Y0-gluco*H/400);
+            let clamped = Math.min(Math.max(gluco, glucoseRangeMin), glucoseRangeMax);
+            Y=Math.round(Y0-(clamped-glucoseRangeMin)*H/rangeSpan);
             X=Math.round(X0 + W*(glucoseHeure[i]-Hdeb)/deltaHeure);
             if (gluco<targetLow){
                 NewCoul="blue";
             } else if (gluco<targetHigh){
                 NewCoul="green";
-            } else if (gluco<300){
+            } else if (gluco<glucoseWarn){
                 NewCoul="orange";
             } else {
                 NewCoul="red";
@@ -189,6 +180,9 @@ function TraceGraphe(glucoseHeure,glucoseValues) {
         S +=` ${X},${Y0}" />` +T;
         
     }
+    // Horizontal line at targetLow — drawn on top of data curve (2 px, blue)
+    let H_TL = Math.round(H * (targetLow - glucoseRangeMin) / rangeSpan);
+    S += `<line x1=${X0} y1=${Y0 - H_TL} x2=${X0 + W} y2=${Y0 - H_TL} style="stroke:blue;stroke-width:2" />`;
     //=======AXES=====
     S += `<line x1=${X0} y1=${Y0} x2=${X0 + W} y2=${Y0} style="stroke:white;stroke-width:2" />`;
     S += `<line x1=${X0} y1=${Y0} x2=${X0} y2=${Y0 - H} style="stroke:white;stroke-width:2" />`;
@@ -264,6 +258,9 @@ function LoadLGlycemie() {
             if (obj.GlycemieVal > 0) {
                 targetLow = obj.targetLow;
                 targetHigh = obj.targetHigh;
+                if (obj.glucoseWarn)     glucoseWarn     = obj.glucoseWarn;
+                if (obj.glucoseRangeMin) glucoseRangeMin = obj.glucoseRangeMin;
+                if (obj.glucoseRangeMax) glucoseRangeMax = obj.glucoseRangeMax;
                 lastGlyUnixTime = obj.lastGlyUnixTime;
                 setValue(obj.GlycemieVal, obj.GlucoseUnitLabel);
                 TraceTendance(obj.TrendArrow);

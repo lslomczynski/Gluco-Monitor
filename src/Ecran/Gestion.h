@@ -26,6 +26,7 @@
 #define pageLangue 60
 #define pageAutBrute 70
 #define pageAbout 80
+#define pageGlucoseSettings 90
 
 
 // Pin definitions

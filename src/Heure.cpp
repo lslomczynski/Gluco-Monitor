@@ -95,8 +95,9 @@ static_assert(ARRAY_SIZE(codeTZ) == ARRAY_SIZE(nomTZ),
               "Timezone arrays size mismatch");
 
 const int NB_TZ = ARRAY_SIZE(nomTZ);
-const char *ntpServer1 = "fr.pool.ntp.org";
-const char *ntpServer2 = "time.nist.gov";
+const char *ntpServer1 = "pool.ntp.org";
+const char *ntpServer2 = "time.google.com";
+const char *ntpServer3 = "time.cloudflare.com";
 
 long convertToUnix(const char *timestamp);
 
@@ -136,6 +137,7 @@ void FormatteHeureDate()
 // **************
 void time_sync_notification(struct timeval *tv)
 {
+  Serial.println("NTP sync OK!");
   FormatteHeureDate();
   HeureValide = true;
 }
@@ -148,7 +150,8 @@ void DefFuseauHoraire(void)
   sntp_set_time_sync_notification_cb(time_sync_notification);
   // sntp_servermode_dhcp(1);   Déprecié
   esp_sntp_servermode_dhcp(true);                                  // Option
-  configTzTime(codeTZ[idxFuseau], ntpServer1, ntpServer2); // Voir Time-Zone:
+  configTzTime(codeTZ[idxFuseau], ntpServer1, ntpServer2, ntpServer3); // Voir Time-Zone:
+  Serial.println("NTP configured, waiting for sync...");
 }
 
 long convertToUnix(const char *dateStr)
@@ -206,4 +209,23 @@ int unixToHeure(time_t unixTime)
   strftime(buffer, sizeof(buffer), "%H", &t);
 
   return atoi(buffer);
+}
+
+void CheckNTPSync()
+{
+    if (HeureValide) return; // Already synced, nothing to do
+
+    // Check if SNTP has synchronized (polling fallback for unreliable callback)
+    time_t now;
+    time(&now);
+    if (now > 1000000000L) // Valid Unix timestamp (after year 2001)
+    {
+        Serial.printf("NTP sync detected via polling, time: %ld\n", now);
+        FormatteHeureDate();
+        HeureValide = true;
+    }
+    else
+    {
+        Serial.printf("NTP not yet synced, raw time: %ld\n", now);
+    }
 }

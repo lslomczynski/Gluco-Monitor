@@ -69,8 +69,6 @@ void Init_Internet()
         delay(10);
     }
 
-    DefFuseauHoraire();
-
     // WIFI
 
     EcranPrintln(T("Nom_WiFi") + ssid);
@@ -116,6 +114,9 @@ void Init_Internet()
         PointsMessage = T("ConnectedWiFi");
         PointsMessage2 = MyIP;
         PointsMessage3 = T("ou") + hostname + ".local";
+        
+        // WiFi connected — now configure NTP (requires active connection)
+        DefFuseauHoraire();
     }
     else
     {

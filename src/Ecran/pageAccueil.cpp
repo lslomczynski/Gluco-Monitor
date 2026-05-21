@@ -27,14 +27,12 @@ void AccueiLoop()
     uint16_t Couleurs[] = {RGB565_BLUE, RGB565_GREEN, RGB565_ORANGE, RGB565_RED};
     uint16_t CouleursFond[] = {C_bleuFonce, C_vertFonce, C_orangeFonce, C_rougeFonce};
     int16_t glucoseInfoColor =  RGB565_WHITE;
-    int seuilCoul[] = {0, 70, 180, 300, 400};
-    seuilCoul[1] = targetLow;
-    seuilCoul[2] = targetHigh;
-    if (glucoseUnit == 1)
-    { // mmol/L
-        seuilCoul[3] = 16 * 18;
-        seuilCoul[4] = 22 * 18;
-    }
+    // Threshold array — all values stored internally as mg/dL
+    // glucoseRangeMin replaces hardcoded 0 as the scale baseline
+    int seuilCoul[] = {glucoseRangeMin, targetLow, targetHigh, glucoseWarn, glucoseRangeMax};
+
+    // Pre-computed scale span used throughout AccueilLoop for consistent scaling
+    float rangeSpan = float(glucoseRangeMax - glucoseRangeMin);
     int idxCoul = 0;
     Trace_Gauge(CanvaAccueil);
 
@@ -96,7 +94,8 @@ void AccueiLoop()
         CanvaAccueil->setFont(u8g2_font_10x20_tf);
         PrintGauche(CanvaAccueil, getGlucoseUnitLabel(), W2 + R0, C + 20, 1);
         glucoseInfoColor = tooOld ? RGB565(50, 50, 50) : RGB565_WHITE;
-        Teta0 = -180 + 18 * GlycemieVal / 40;
+        // Needle angle — maps GlycemieVal onto the arc using the same scale as Trace_Gauge
+        Teta0 = -180 + (int)(180.0f * (constrain((int)GlycemieVal, glucoseRangeMin, glucoseRangeMax) - glucoseRangeMin) / rangeSpan);
         if (Teta0 > 0)
             Teta0 = 0;
         if (Teta0 < -180)
@@ -275,10 +274,10 @@ void AccueiLoop()
         float DT = float(W) / (float(Tmax - Tmin));
         CanvaAccueil->setFont(u8g2_font_6x10_tf);
 
-        for (int c = 0; c < 4; c++) // Trace fond graphique
+        for (int c = 0; c < 4; c++) // Draw chart background bands
         {
-            int16_t y2 = EcranH10 - H * seuilCoul[c] / 400;
-            y = EcranH10 - H * seuilCoul[c + 1] / 400;
+            int16_t y2 = EcranH10 - (int)(H * (seuilCoul[c]     - glucoseRangeMin) / rangeSpan);
+            y           = EcranH10 - (int)(H * (seuilCoul[c + 1] - glucoseRangeMin) / rangeSpan);
             String Seuil = String(seuilCoul[c + 1]);
             if (glucoseUnit == 1)
             { // mmol/L
@@ -290,7 +289,8 @@ void AccueiLoop()
         for (int i = 0; i < pointCountGly; i++)
         {
             x = X0 + int(DT * float(glucoseHeure[i] - Tmin));
-            y = H * glucoseValues[i] / 400;
+            // Clamp value to visible range and compute bar height relative to glucoseRangeMin
+            y = (int)(H * (constrain(glucoseValues[i], glucoseRangeMin, glucoseRangeMax) - glucoseRangeMin) / rangeSpan);
             for (int c = 0; c < 4; c++)
             {
                 if (glucoseValues[i] > seuilCoul[c])
@@ -311,6 +311,9 @@ void AccueiLoop()
                 lastHeure = heure;
             }
         }
+        // Horizontal line at targetLow — drawn on top of data bars (2 px, same weight as axis)
+        int16_t yTL = EcranH10 - (int)(H * (targetLow - glucoseRangeMin) / rangeSpan);
+        CanvaAccueil->fillRect(X0, yTL, W, 2, RGB565_BLUE);
         CanvaAccueil->drawFastVLine(X0, EcranH10 - H, H, RGB565_WHITE); // Axe vertical
     }
 }
@@ -318,22 +321,37 @@ void AccueiLoop()
 void Trace_Gauge(Arduino_Canvas *canva)
 {
     int W2 = EcranW / 2;
-    int C = EcranH / 2;
+    int C  = EcranH / 2;
     int R0 = EcranH / 3.5;
     int R1 = EcranH / 2 - 20;
-    int Teta0 = -180;
-    int Teta1 = Teta0 + 180 * targetLow / 400;
+
+    float rangeSpan = glucoseRangeMax - glucoseRangeMin;  // full scale range
+
+    // Helper: converts a glucose value (mg/dL) to an arc angle in degrees
+    // glucoseRangeMin maps to -180°, glucoseRangeMax maps to 0°
+    auto toAngle = [&](int val) -> int {
+        float clamped = constrain(val, glucoseRangeMin, glucoseRangeMax);
+        return -180 + (int)(180.0f * (clamped - glucoseRangeMin) / rangeSpan);
+    };
+
+    int Teta0, Teta1;
+
+    // Blue segment: glucoseRangeMin → targetLow (below target)
+    Teta0 = -180;
+    Teta1 = toAngle(targetLow);
     canva->fillArc(W2, C, R0, R1, Teta0, Teta1, RGB565_BLUE);
+
+    // Green segment: targetLow → targetHigh (target range)
     Teta0 = Teta1;
-    Teta1 = -180 + 180 * targetHigh / 400;
+    Teta1 = toAngle(targetHigh);
     canva->fillArc(W2, C, R0, R1, Teta0, Teta1, RGB565_GREEN);
+
+    // Orange segment: targetHigh → glucoseWarn (elevated)
     Teta0 = Teta1;
-    Teta1 = -180 + 180 * 300 / 400;
-    if (glucoseUnit == 1)
-    { // mmol/L
-        Teta1 = -180 + 180 * 16 * 18 / 400;
-    }
+    Teta1 = toAngle(glucoseWarn);
     canva->fillArc(W2, C, R0, R1, Teta0, Teta1, RGB565_ORANGE);
+
+    // Red segment: glucoseWarn → glucoseRangeMax (high / danger)
     Teta0 = Teta1;
     Teta1 = 0;
     canva->fillArc(W2, C, R0, R1, Teta0, Teta1, RGB565_RED);

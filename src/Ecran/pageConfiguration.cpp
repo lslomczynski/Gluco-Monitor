@@ -10,9 +10,10 @@
 #include "Ecran/pageFuseauH.h"
 #include "Ecran/pageLangue.h"
 #include "Ecran/pageAbout.h"
+#include "Ecran/pageGlucoseSettings.h"
 #include "Langues/Langue.h"
 
-static Bouton Boutons[8] = {
+static Bouton Boutons[9] = {
     {25, 50, 110, 30, "WiFi"},
     {185, 50, 110, 30, "Compte"},
     {15, 100, 110, 30, "Affichage"},
@@ -20,7 +21,8 @@ static Bouton Boutons[8] = {
     {15, 100, 110, 30, "Langue"},
     {185, 100, 110, 30, "Fuseau Horaire"},
     {15, 100, 110, 30, "About"},
-    {300, 200, 150, 30, "Restart"}};
+    {15, 100, 110, 30, "Glucose"},
+    {15, 100, 110, 30, "Restart"}};
 
 void ParaInit()
 {
@@ -38,10 +40,11 @@ void ParaInit()
   Boutons[4].Texte=T("Lang");
   Boutons[5].Texte=T("F_Hor");
   Boutons[6].Texte=T("Apropos");
-  Boutons[7].Texte=T("Restart");
+  Boutons[7].Texte=T("ChartLimits");
+  Boutons[8].Texte=T("Restart");
 
   int X, Y;
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < 9; i++)
   {
     Boutons[i].W = 200;
     Boutons[i].H = 40;
@@ -52,13 +55,13 @@ void ParaInit()
     else
     {
       X = 20;
-      Y = 80 + i * 26;
+      Y = 60 + i * 25;
     }
-    if (i == 7) //Restart
+    if (i == 8) //Restart
     {
-      X = EcranW - 190;
-      Boutons[i].H = 60;
-      Boutons[i].W = 140;
+      X = EcranW2 - 100;
+      Boutons[i].H = 40;
+      Boutons[i].W = 200;
     }
     Boutons[i].X0 = X;
     Boutons[i].Y0 = Y;
@@ -69,7 +72,7 @@ void ParaInit()
 }
 void pageConfigurationChoix(uint16_t touchX, uint16_t touchY, int16_t DeltaTouchX, int16_t DeltaTouchY)
 {
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < 9; i++)
   {
 
     if (Bouton_Appui(Boutons[i], touchX, touchY, CanvaConfig))
@@ -98,7 +101,10 @@ void pageConfigurationChoix(uint16_t touchX, uint16_t touchY, int16_t DeltaTouch
         case 6:
           pageAboutSetup();
           break;
-         case 7:
+        case 7:
+          pageGlucoseSettingsSetup();
+          break;
+         case 8:
           ESP.restart();
           break;
 

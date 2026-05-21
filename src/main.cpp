@@ -145,6 +145,15 @@ void loop()
 {
 
   LireSerial();
+  
+  // Periodically poll for NTP sync if not yet synchronized
+  static unsigned long lastNTPCheck = 0;
+  if (!HeureValide && millis() - lastNTPCheck > 5000)
+  {
+    lastNTPCheck = millis();
+    CheckNTPSync();
+  }
+  
   if (HeureValide)
   {
     // Call appropriate sensor reading function based on sensor type

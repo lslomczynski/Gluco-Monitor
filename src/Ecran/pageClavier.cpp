@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "Ecran/Gestion.h"
 #include "Ecran/pageCompte.h"
+#include "Ecran/pageWifiList.h"
 #include "Stock.h"
 #include "Langues/Langue.h"
 // ==========================
@@ -159,7 +160,7 @@ void handleTouch_clavier(int tx, int ty)
           textBuffer = "";
           if (PageActu == pageClavier_WifiPwd)
           {
-
+            wifiRestorePreviousSsid(); // restore ssid to what it was before selection
             PageActu = pageConfiguration;
             return;
           }

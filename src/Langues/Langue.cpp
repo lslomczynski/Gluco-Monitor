@@ -7,7 +7,7 @@
 
 
 int8_t LaLangue = LANG_NONDEF;
-String LangueSymbole[5] ={"en","fr","de","es","it"};
+String LangueSymbole[6] ={"en","fr","de","es","it","pl"};
 
 String T(String key) { //Traduction phrase dans la langue
     String file;
@@ -28,6 +28,9 @@ String T(String key) { //Traduction phrase dans la langue
             break;
         case LANG_IT:
             file=String(LangIT);
+            break;
+        case LANG_PL:
+            file=String(LangPL);
             break;
     }
     

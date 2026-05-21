@@ -95,6 +95,7 @@ inline const char *LangIT = R"====(
   "PasseDexcom":"Password Dexcom Share",
   "Username":"Nome utente",
   "Region":"Regione",
-  "DexcomIndefini":"Account Dexcom non definito"
+  "DexcomIndefini":"Account Dexcom non definito",
+  "ChartLimits":"Impostazioni del grafico"
 }
 )====";

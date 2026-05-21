@@ -6,6 +6,7 @@
 #include "Langues/de.h"
 #include "Langues/it.h"
 #include "Langues/es.h"
+#include "Langues/pl.h"
 
 
 //Pages tournantes
@@ -15,6 +16,7 @@
 #define LANG_DE 2
 #define LANG_ES 3
 #define LANG_IT 4
+#define LANG_PL 5
 
 extern int8_t LaLangue;
 extern String LangueSymbole[];

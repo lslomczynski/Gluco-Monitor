@@ -95,6 +95,7 @@ inline const char *LangEN = R"====(
   "PasseDexcom":"Dexcom Share password",
   "Username":"Username",
   "Region":"Region",
-  "DexcomIndefini":"Dexcom account not defined"
+  "DexcomIndefini":"Dexcom account not defined",
+  "ChartLimits":"Chart Limits"
 }
 )====";

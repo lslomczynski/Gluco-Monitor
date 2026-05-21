@@ -22,6 +22,7 @@
 #include "Langues/de.h"
 #include "Langues/it.h"
 #include "Langues/es.h"
+#include "Langues/pl.h"
 
 // Serveur Web
 static AsyncWebServer server(80);
@@ -72,7 +73,15 @@ void Init_Server()
       });
 
   server.on("/JS_Commun", HTTP_GET, [](AsyncWebServerRequest *request)
-            { String complement="\nconst Version = '" + String(Version) +"' ;\nconst glucoseUnit = " + String(glucoseUnit) + ";";
+            { // Pass all threshold variables needed by the web gauge and chart
+              String complement =
+                "\nconst Version = '" + String(Version) + "';"
+                "\nconst glucoseUnit = " + String(glucoseUnit) + ";"
+                "\nlet glucoseRangeMax = " + String(glucoseRangeMax) + ";"
+                "\nlet glucoseRangeMin = " + String(glucoseRangeMin) + ";"
+                "\nlet glucoseWarn = " + String(glucoseWarn) + ";"
+                "\nlet targetLow = " + String(targetLow) + ";"
+                "\nlet targetHigh = " + String(targetHigh) + ";";
               request->send(200, "text/javascript", String(JS_Commun) + complement); });
   server.on("/JS_Traduction", HTTP_GET, [](AsyncWebServerRequest *request)
             {  String file;
@@ -93,6 +102,9 @@ void Init_Server()
                       case LANG_IT:
                           file=String(LangIT);
                           break;
+                      case LANG_PL:
+                          file=String(LangPL);
+                          break;
                   }
               
               request->send(200, "text/javascript",  "Traduction =" + file +";"); });
@@ -112,6 +124,9 @@ void Init_Server()
                 doc["lastGlyUnixTime"] = lastGlyUnixTime;
                 doc["targetLow"] = targetLow;
                 doc["targetHigh"] = targetHigh;
+                doc["glucoseWarn"] = glucoseWarn;
+                doc["glucoseRangeMin"] = glucoseRangeMin;
+                doc["glucoseRangeMax"] = glucoseRangeMax;
                 doc["sensorType"] = (int)sensorType;
                 String Json;
                 serializeJson(doc, Json);
