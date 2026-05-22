@@ -96,6 +96,6 @@ inline const char *LangFR = R"====(
   "Username":"Nom d'utilisateur",
   "Region":"Région",
   "DexcomIndefini":"Compte Dexcom non défini",
-  "ChartLimits":"Configuration du graphique"
+  "ChartLimits":"Graphique"
 }
 )====";

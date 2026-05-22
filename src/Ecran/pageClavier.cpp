@@ -27,10 +27,18 @@ static bool cursorVisible = true;
 // CLAVIERS
 // ==========================
 
-const char *alphaKeys[4][10] = {
+// AZERTY layout — used only when French language is active
+const char *alphaKeysAZERTY[4][10] = {
     {"A", "Z", "E", "R", "T", "Y", "U", "I", "O", "P"},
     {"Q", "S", "D", "F", "G", "H", "J", "K", "L", "M"},
     {"W", "X", "C", "V", "B", "N", ".", "-", "@", "_"},
+    {"SHIFT", "SPACE", "DEL", "123", "Cancel", "OK", "", "", "", ""}};
+
+// QWERTY layout — default for all other languages
+const char *alphaKeysQWERTY[4][10] = {
+    {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
+    {"A", "S", "D", "F", "G", "H", "J", "K", "L", "M"},
+    {"Z", "X", "C", "V", "B", "N", ".", "-", "@", "_"},
     {"SHIFT", "SPACE", "DEL", "123", "Cancel", "OK", "", "", "", ""}};
 
 const char *numKeys[4][10] = {
@@ -40,6 +48,11 @@ const char *numKeys[4][10] = {
     {"ABC", "SPACE", "DEL", ".com", "Cancel", "OK", "", "", "", ""}};
 
 void Position(int row, int col, int &x, int &y, int &keyWidth, int &keyHeight);
+
+// Returns the alpha key for the current language layout (AZERTY for French, QWERTY otherwise)
+inline const char* getAlphaKey(int row, int col) {
+    return (LaLangue == LANG_FR ? alphaKeysAZERTY : alphaKeysQWERTY)[row][col];
+}
 
 // ==========================
 // DESSIN
@@ -63,7 +76,7 @@ void drawTextBox()
 
 void drawKey(int row, int col)
 {
-  const char *label = isNumeric ? numKeys[row][col] : alphaKeys[row][col];
+  const char *label = isNumeric ? numKeys[row][col] : getAlphaKey(row, col);
   if (label[0] == '\0')
     return;
 
@@ -128,7 +141,7 @@ void handleTouch_clavier(int tx, int ty)
       if (tx > x && tx < x + w &&
           ty > y && ty < y + h)
       {
-        const char *label = isNumeric ? numKeys[r][c] : alphaKeys[r][c];
+        const char *label = isNumeric ? numKeys[r][c] : getAlphaKey(r, c);
         if (label[0] == '\0')
           return;
 
