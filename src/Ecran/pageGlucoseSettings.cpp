@@ -93,13 +93,13 @@ static void drawRows()
         edit_glucoseRangeMax
     };
 
-    // Color coding: blue / green / green / orange / red
+    // Color coding matches zone convention: red=low, green=target, orange=high, purple=very high
     uint16_t colors[5] = {
-        RGB565_BLUE,
-        RGB565_GREEN,
-        RGB565_GREEN,
-        RGB565_ORANGE,
-        RGB565_RED
+        RGB565_RED,    // glucoseRangeMin — chart floor (low/hypo zone)
+        RGB565_GREEN,  // targetLow       — lower target boundary
+        RGB565_GREEN,  // targetHigh      — upper target boundary
+        RGB565_ORANGE, // glucoseWarn     — high zone threshold
+        RGB565_PURPLE  // glucoseRangeMax — chart ceiling (very high zone)
     };
 
     for (uint8_t i = 0; i < 5; i++) {
@@ -236,11 +236,11 @@ void handleTouch_GlucoseSettings(uint16_t touchX, uint16_t touchY)
     };
 
     uint16_t rowColors[5] = {
-        RGB565_BLUE,
-        RGB565_GREEN,
-        RGB565_GREEN,
-        RGB565_ORANGE,
-        RGB565_RED
+        RGB565_RED,    // glucoseRangeMin — chart floor (low/hypo zone)
+        RGB565_GREEN,  // targetLow       — lower target boundary
+        RGB565_GREEN,  // targetHigh      — upper target boundary
+        RGB565_ORANGE, // glucoseWarn     — high zone threshold
+        RGB565_PURPLE  // glucoseRangeMax — chart ceiling (very high zone)
     };
 
     // ── Minus buttons (0-4) ───────────────────────────────────────────────────

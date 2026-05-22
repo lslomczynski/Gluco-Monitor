@@ -39,11 +39,13 @@
 #define TOUCH_INT_PIN 11
 #define AXS_MAX_TOUCH_NUMBER 1
 
-//Couleurs
-#define C_bleuFonce RGB565(0, 0, 70)
-#define C_vertFonce RGB565(0, 50, 0)
-#define C_orangeFonce RGB565(70, 50, 0)
-#define C_rougeFonce RGB565(70, 0, 0)
+// Bar chart background colours — one dark shade per zone
+#define C_fondBas      RGB565(70, 0, 0)    // dark red    — below targetLow (hypoglycaemia)
+#define C_fondCible    RGB565(0, 50, 0)    // dark green  — target range
+#define C_fondHaut     RGB565(70, 50, 0)   // dark orange — above targetHigh
+#define C_fondTresHaut RGB565(50, 0, 70)   // dark purple — above glucoseWarn
+
+// RGB565_PURPLE (128,0,128) is defined in the Arduino GFX library — used for the very-high zone
 #define C_grisFonce RGB565(50, 50, 50)
 #define C_grisMoyen RGB565(100, 100, 100)
 

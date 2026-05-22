@@ -109,10 +109,10 @@ const char *MainHtml = R"====(
 
                 <!-- zones couleur -->
 
-                <path id="z1" class="zone" stroke="blue" />
+                <path id="z1" class="zone" stroke="red" />
                 <path id="z2" class="zone" stroke="green" />
                 <path id="z3" class="zone" stroke="orange" />
-                <path id="z4" class="zone" stroke="red" />
+                <path id="z4" class="zone" stroke="purple" />
 
                 <!-- aiguille -->
 

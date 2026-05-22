@@ -123,8 +123,8 @@ function TraceGraphe(glucoseHeure,glucoseValues) {
     // seuilCoul mirrors pageAccueil.cpp: {glucoseRangeMin, targetLow, targetHigh, glucoseWarn, glucoseRangeMax}
     const seuilCoul  = [glucoseRangeMin, targetLow, targetHigh, glucoseWarn, glucoseRangeMax];
     // Colours tuned for web (dark page #111): perceived luminance balanced across all bands
-    // device CouleursFond values (70,0,0 etc.) are too dark for a browser display
-    const bandColors = ["rgba(0,0,120,1)", "rgba(0,100,0,1)", "rgba(100,65,0,1)", "rgba(139,0,0,1)"];
+    // Red=low, Green=target, Orange=high, Purple=very high — mirrors FreeStyle Libre / Dexcom convention
+    const bandColors = ["rgba(180,0,0,1)", "rgba(0,100,0,1)", "rgba(100,65,0,1)", "rgba(100,0,160,1)"];
     const bandLabels = [null, TargetLow, TargetHigh, SeuilGlucoseWarn, SeuilGlucoseRangeMax];
     for (let c = 0; c < 4; c++) {
         let yBottom = Math.round(Y0 - H * (seuilCoul[c]   - glucoseRangeMin) / rangeSpan);
@@ -153,13 +153,13 @@ function TraceGraphe(glucoseHeure,glucoseValues) {
             Y=Math.round(Y0-(clamped-glucoseRangeMin)*H/rangeSpan);
             X=Math.round(X0 + W*(glucoseHeure[i]-Hdeb)/deltaHeure);
             if (gluco<targetLow){
-                NewCoul="blue";
+                NewCoul="red";
             } else if (gluco<targetHigh){
                 NewCoul="green";
             } else if (gluco<glucoseWarn){
                 NewCoul="orange";
             } else {
-                NewCoul="red";
+                NewCoul="purple";
             }
             if (Coul!=NewCoul){
                 if(i>0) S+=` ${X},${Y} ${X},${Y0}" />`;
@@ -180,9 +180,9 @@ function TraceGraphe(glucoseHeure,glucoseValues) {
         S +=` ${X},${Y0}" />` +T;
         
     }
-    // Horizontal line at targetLow — drawn on top of data curve (2 px, blue)
+    // Horizontal line at targetLow — drawn on top of data curve (2 px, red, dashed)
     let H_TL = Math.round(H * (targetLow - glucoseRangeMin) / rangeSpan);
-    S += `<line x1=${X0} y1=${Y0 - H_TL} x2=${X0 + W} y2=${Y0 - H_TL} style="stroke:blue;stroke-width:2" />`;
+    S += `<line x1=${X0} y1=${Y0 - H_TL} x2=${X0 + W} y2=${Y0 - H_TL} style="stroke:red;stroke-width:2;stroke-dasharray:6,4" />`;
     //=======AXES=====
     S += `<line x1=${X0} y1=${Y0} x2=${X0 + W} y2=${Y0} style="stroke:white;stroke-width:2" />`;
     S += `<line x1=${X0} y1=${Y0} x2=${X0} y2=${Y0 - H} style="stroke:white;stroke-width:2" />`;

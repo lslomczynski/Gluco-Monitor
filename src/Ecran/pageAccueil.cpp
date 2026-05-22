@@ -29,15 +29,15 @@ void AccueiLoop()
     //   All y > C=265 is below the semicircle → zero arc overlap with text/unit
     //   Glucose: setTextSize(2) on inb63_mn → ~126 px effective height
     //   Unit: helvB14 centred at (240, 300) → between glucose bottom and progress bar
-    int16_t C  = altView ? 255                : EcranH / 2;
+    int16_t C  = altView ? 245               : EcranH / 2;
     int16_t R0 = altView ? 137               : (int)(EcranH / 3.5f);
     int16_t R1 = altView ? 210               : EcranH / 2 - 20;
     int16_t valY  = altView ? EcranH - 30    : C + 25;   // glucose text baseline
     int16_t unitX = W2 + R0;                              // unit label left edge (normal view)
 
     int16_t Teta0 = -180;
-    uint16_t Couleurs[]     = {RGB565_BLUE, RGB565_GREEN, RGB565_ORANGE, RGB565_RED};
-    uint16_t CouleursFond[] = {C_bleuFonce, C_vertFonce, C_orangeFonce, C_rougeFonce};
+    uint16_t Couleurs[]     = {RGB565_RED, RGB565_GREEN, RGB565_ORANGE, RGB565_PURPLE};
+    uint16_t CouleursFond[] = {C_fondBas, C_fondCible, C_fondHaut, C_fondTresHaut};
     int16_t glucoseInfoColor = RGB565_WHITE;
     int seuilCoul[] = {glucoseRangeMin, targetLow, targetHigh, glucoseWarn, glucoseRangeMax};
     float rangeSpan = float(glucoseRangeMax - glucoseRangeMin);
@@ -90,7 +90,7 @@ void AccueiLoop()
         CanvaAccueil->setTextColor(glucoseInfoColor);
         // Glucose value
         // Normal:  inb63_mn, PrintCentre Sz=1 → 63 px
-        // Alt:     inb49_mn, PrintCentre Sz=3 → ~147 px  (+17 %, closest to requested +20 %)
+        // Alt:     inb49_mn, PrintCentre Sz=2 → 49*2=98 px (fits in 210 radius with room for unit label below)
         // NOTE: PrintCentre internally calls setTextSize(Sz) — must pass Sz here, not before.
         if (altView) {
             CanvaAccueil->setFont(u8g2_font_inb49_mn);
@@ -109,7 +109,7 @@ void AccueiLoop()
         if (altView) {
             CanvaAccueil->setFont(u8g2_font_helvB14_tf);
             int16_t unitCX = W2 + (R0 + R1) / 2;   // = 240 + (137+210)/2 = 413
-            PrintCentre(CanvaAccueil, getGlucoseUnitLabel(), unitCX, valY - 10, 1);
+            PrintCentre(CanvaAccueil, getGlucoseUnitLabel(), unitCX, valY - 20, 1);
         } else {
             CanvaAccueil->setFont(u8g2_font_10x20_tf);
             PrintGauche(CanvaAccueil, getGlucoseUnitLabel(), unitX, valY - 5, 1);
@@ -267,9 +267,10 @@ void AccueiLoop()
                 lastHeure = heure;
             }
         }
-        // Ligne horizontale à targetLow — sur le dessus des barres (2 px, bleu)
+        // Ligne horizontale à targetLow — sur le dessus des barres (2 px, rouge, tirets 6+4)
         int16_t yTL = EcranH10 - (int)(H * (targetLow - glucoseRangeMin) / rangeSpan);
-        CanvaAccueil->fillRect(X0, yTL, W, 2, RGB565_BLUE);
+        for (int16_t xd = X0; xd < X0 + W; xd += 10)
+            CanvaAccueil->fillRect(xd, yTL, min((int16_t)6, (int16_t)(X0 + W - xd)), 2, RGB565_RED);
         CanvaAccueil->drawFastVLine(X0, EcranH10 - H, H, RGB565_WHITE); // Axe vertical
     }
 }
@@ -305,22 +306,22 @@ void Trace_Gauge(Arduino_Canvas *canva, int cx, int cy, int r_inner, int r_outer
 
     int Teta0, Teta1;
 
-    // Blue: glucoseRangeMin → targetLow
+    // Red: glucoseRangeMin → targetLow (hypoglycaemia)
     Teta0 = -180;
     Teta1 = toAngle(targetLow);
-    canva->fillArc(cx, cy, r_inner, r_outer, Teta0, Teta1, RGB565_BLUE);
+    canva->fillArc(cx, cy, r_inner, r_outer, Teta0, Teta1, RGB565_RED);
 
-    // Green: targetLow → targetHigh
+    // Green: targetLow → targetHigh (target range)
     Teta0 = Teta1;
     Teta1 = toAngle(targetHigh);
     canva->fillArc(cx, cy, r_inner, r_outer, Teta0, Teta1, RGB565_GREEN);
 
-    // Orange: targetHigh → glucoseWarn
+    // Orange: targetHigh → glucoseWarn (above target)
     Teta0 = Teta1;
     Teta1 = toAngle(glucoseWarn);
     canva->fillArc(cx, cy, r_inner, r_outer, Teta0, Teta1, RGB565_ORANGE);
 
-    // Red: glucoseWarn → glucoseRangeMax
+    // Purple: glucoseWarn → glucoseRangeMax (very high)
     Teta0 = Teta1;
-    canva->fillArc(cx, cy, r_inner, r_outer, Teta0, 0, RGB565_RED);
+    canva->fillArc(cx, cy, r_inner, r_outer, Teta0, 0, RGB565_PURPLE);
 }

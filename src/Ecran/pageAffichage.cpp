@@ -13,8 +13,8 @@ static RadioBouton Rboutons[8] = {
     {10, 90, 15, "100%"},
     {10, 180, 15, "0°"},
     {10, 180, 15, "180°"},
-    {10, 270, 15, T("Blanc")},
-    {10, 270, 15, T("Couleur")}};
+    {10, 270, 15, "Blanc"},
+    {10, 270, 15, "Couleur"}};
 
 void DrawBoutons();
 
@@ -46,6 +46,10 @@ void pageAffichageSetup()
     CanvaBase->setTextColor(RGB565_WHITE);
     PrintCentre(CanvaBase, T("CouleurGlycemie"), EcranW / 2, 250, 1);
 
+    // Update translatable labels for the colour radio buttons — must be set at runtime,
+    // not in the static initializer (LaLangue is not yet set when static vars are initialized)
+    Rboutons[6].Texte = T("Blanc");
+    Rboutons[7].Texte = T("Couleur");
     DrawBoutons();
 
     CanvaBase->flush();
