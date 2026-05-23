@@ -129,17 +129,14 @@ void getConnection()
       GlycemieVal = Glycemie.toInt();
     }
     String DateGly = doc["data"][0]["glucoseItem"]["Timestamp"].as<String>();
-    targetLow = doc["data"][0]["targetLow"];
-    targetHigh = doc["data"][0]["targetHigh"];
+    // Note: API also returns targetLow/targetHigh but we ignore them —
+    // the user's locally configured thresholds take priority.
     S = HEURE + T("LastGlyco") + formatGlucoseValue(GlycemieVal) + " " + getGlucoseUnitLabel() + " " + T("le") + DateGly;
     EcranPrintln(S);
     TrendArrow = doc["data"][0]["glucoseItem"]["TrendArrow"].as<int8_t>();
     lastReceptionGlycMillis = millis();
     Serial.println();
     Serial.println("TrendArrow : " + String(TrendArrow));
-    Serial.println();
-    Serial.println("targetLow : " + String(targetLow));
-    Serial.println("targetHigh : " + String(targetHigh));
 
     patientId = doc["data"][0]["patientId"].as<String>();
 

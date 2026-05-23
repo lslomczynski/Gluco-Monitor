@@ -4,10 +4,13 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ESPmDNS.h>
+#include <DNSServer.h>
 #include <Serie.h>
 #include "Heure.h"
 #include "Stock.h"
+#include "Server.h"
 #include "Ecran/pageWifiList.h"
+#include "Ecran/pageSetupChoice.h"
 #include "Ecran/Gestion.h"
 #include "Ecran/pageMessages.h"
 #include "Langues/Langue.h"
@@ -16,11 +19,42 @@
 
 int16_t ComSurv = 6; // Timeout sans Wifi par pas de 30s
 
+// Access Point mode
+bool apModeActive = false;
+static DNSServer dnsServer;
+
 String Liste_AP = "";
 static uint8_t bestBSSID[6]; // Meilleur en dBm adresse MAC
 
 String Format_WiFi(int num, const String &nom, int niveau, const String &MAC, int channel);
 bool Liste_WIFI();
+
+// Guard to ensure Init_Server() is called only once (AP → Cancel → AP path)
+static bool serverStarted = false;
+
+// Start Wi-Fi Access Point for first-boot configuration
+void StartAPMode()
+{
+    WiFi.mode(WIFI_AP_STA);
+    delay(100); // Wait for mode switch before configuring softAP
+    WiFi.softAP(hostname.c_str(), "monitor1"); // WPA2 minimum is 8 characters
+    dnsServer.start(53, "*", WiFi.softAPIP()); // Redirect all DNS queries (captive portal)
+    apModeActive = true;
+    // Start web server after AP is up — TCP/IP stack is ready at this point
+    if (!serverStarted) {
+        Init_Server();
+        serverStarted = true;
+    }
+}
+ 
+// Stop Access Point mode and return to station-only mode
+void StopAPMode()
+{
+    dnsServer.stop();
+    WiFi.softAPdisconnect(true);
+    WiFi.mode(WIFI_STA);
+    apModeActive = false;
+}
 
 // ***********************************
 // INIT INTERNET
@@ -39,7 +73,16 @@ void Init_Internet()
     EcranPrintln("Hostname : " + hostname);
     if (ssid.length() == 0)
     {
-        QuestionConfiguration(T("SelectWifi"), WifiListSetup);
+        // Show two-button choice: on-screen WiFi list vs Access Point setup
+        // Init_Server() is called from StartAPMode() after the AP is up (TCP/IP stack ready)
+        pageSetupChoiceSetup();
+        // Blocking loop — exits only via ESP.restart() (from either setup path)
+        while (true)
+        {
+            loopEcran();
+            if (apModeActive) dnsServer.processNextRequest();
+            delay(10);
+        }
     }
     CanvaBase->fillRect(0, EcranH2, EcranW, EcranH2, RGB565_BLACK);
 

@@ -1,4 +1,5 @@
 #include "pageWifiList.h"
+#include "pageSetupChoice.h"
 #include "Config.h"
 #include <Arduino.h>
 #include <WiFi.h>
@@ -14,6 +15,7 @@ static String previousSsid = ""; // Backup of ssid before selection (restored on
 
  
 static Bouton Boutons[6] = {};
+static Bouton BoutonBack = {};
 
 void WifiListSetup()
 {
@@ -62,6 +64,11 @@ void WifiListSetup()
 
     WiFi.scanDelete();
 
+    // Back button — visible during first-boot (SetupEnCours) to return to the setup choice screen
+    if (SetupEnCours) {
+        BoutonBack = {10, (int16_t)(EcranH - 42), 120, 36, "< Back"};
+        Bouton_Trace(BoutonBack, C_grisMoyen, CanvaBase);
+    }
 
     CanvaBase->flush();
 }
@@ -79,7 +86,13 @@ String Format2_WiFi(int num, const String &nom, int niveau)
 }
 
 void handleTouch_WifiList(uint16_t touchX, uint16_t touchY)
-{  
+{
+    // Back button — only shown during first-boot setup
+    if (SetupEnCours && Bouton_Appui(BoutonBack, touchX, touchY)) {
+        pageSetupChoiceSetup();
+        return;
+    }
+
     for (int i = 0; i < nbWifi; ++i)
     {
         if (Bouton_Appui(Boutons[i], touchX, touchY)) {

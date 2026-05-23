@@ -174,7 +174,10 @@ void handleTouch_clavier(int tx, int ty)
           if (PageActu == pageClavier_WifiPwd)
           {
             wifiRestorePreviousSsid(); // restore ssid to what it was before selection
-            PageActu = pageConfiguration;
+            if (SetupEnCours)
+              WifiListSetup(); // first-boot: go back to the network list
+            else
+              PageActu = pageConfiguration;
             return;
           }
           if (PageActu == pageClavier_CompteEmail || PageActu == pageClavier_ComptePwd ||

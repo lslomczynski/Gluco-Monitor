@@ -127,8 +127,12 @@ static void drawRow(uint8_t idx, int16_t value, uint16_t color, const String &la
     CanvaBase->setTextColor(color);
     PrintGauche(CanvaBase, label, 18, midY + 5, 1);
 
-    // ── Value (centre) ────────────────────────────────────────────────────────
-    String valStr = String(value) + " mg/dL";
+    // ── Value (centre) — show in the user's chosen unit ──────────────────────
+    String valStr;
+    if (glucoseUnit == GLUCOSE_UNIT_MMOLL)
+        valStr = String(value / 18.02f, 1) + " mmol/L";
+    else
+        valStr = String(value) + " mg/dL";
     CanvaBase->setTextColor(RGB565_WHITE);
     PrintCentre(CanvaBase, valStr, EcranW / 2, midY + 5, 1);
 
@@ -199,7 +203,9 @@ static void drawBottomButtons()
 static bool validate()
 {
     if (edit_targetLow < 40 || edit_glucoseRangeMax > 600) {
-        errMsg = "Values must be 40-600 mg/dL";
+        errMsg = (glucoseUnit == GLUCOSE_UNIT_MMOLL)
+                 ? "Values: 2.2 - 33.3 mmol/L"
+                 : "Values must be 40-600 mg/dL";
         return false;
     }
     if (!(edit_glucoseRangeMin < edit_targetLow)) {

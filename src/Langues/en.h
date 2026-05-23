@@ -96,6 +96,11 @@ inline const char *LangEN = R"====(
   "Username":"Username",
   "Region":"Region",
   "DexcomIndefini":"Dexcom account not defined",
-  "ChartLimits":"Chart Limits"
+  "ChartLimits":"Chart Limits",
+  "SetupOnScreen":"Configure on-screen",
+  "SetupAP":"Configure over Wi-Fi",
+  "APConnect":"Connect to this Wi-Fi network:",
+  "APPassword":"Password: monitor1",
+  "APOpenBrowser":"Then open in your browser:"
 }
 )====";

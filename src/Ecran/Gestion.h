@@ -27,6 +27,8 @@
 #define pageAutBrute 70
 #define pageAbout 80
 #define pageGlucoseSettings 90
+#define pageSetupChoice 100
+#define pageAPInfo      101
 
 
 // Pin definitions

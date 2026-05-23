@@ -96,6 +96,11 @@ inline const char *LangES = R"====(
   "Username":"Nombre de usuario",
   "Region":"Región",
   "DexcomIndefini":"Cuenta Dexcom no definida",
-  "ChartLimits":"Configuracion del grafico"
+  "ChartLimits":"Configuracion del grafico",
+  "SetupOnScreen":"Configurar en pantalla",
+  "SetupAP":"Configurar via Wi-Fi",
+  "APConnect":"Conectese a esta red WiFi:",
+  "APPassword":"Contrasena: monitor1",
+  "APOpenBrowser":"Luego abrir en el navegador:"
 }
 )====";

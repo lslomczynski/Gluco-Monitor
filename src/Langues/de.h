@@ -96,7 +96,12 @@ inline const char *LangDE = R"====(
   "Username":"Benutzername",
   "Region":"Region",
   "DexcomIndefini":"Dexcom-Konto nicht definiert",
-  "ChartLimits":"Diagrammeinstellungen"
+  "ChartLimits":"Diagrammeinstellungen",
+  "SetupOnScreen":"Am Bildschirm konfigurieren",
+  "SetupAP":"Uber Wi-Fi konfigurieren",
+  "APConnect":"Mit diesem WLAN-Netzwerk verbinden:",
+  "APPassword":"Passwort: monitor1",
+  "APOpenBrowser":"Dann im Browser oeffnen:"
 }
 )====";
 

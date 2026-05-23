@@ -21,6 +21,8 @@
 #include "Ecran/pageAutBrute.h"
 #include "Ecran/pageAbout.h"
 #include "Ecran/pageGlucoseSettings.h"
+#include "Ecran/pageSetupChoice.h"
+#include "Ecran/pageAPInfo.h"
 #include "Langues/Langue.h"
 
 //************Alternative declarations *******************************************
@@ -152,13 +154,14 @@ void loopEcran()
           return; // Anti-rebond simple
 
         PageDelta = 0;
-        if (DeltaTouchX < -10) // On veut revenir à la page de configuration generale
+        // Swipe-back is disabled during first-boot setup (SetupEnCours=true)
+        if (DeltaTouchX < -10 && !SetupEnCours)
         {
             PageActu = pageConfiguration;
             PageDelta = 480; // Delta en pixels
         }
-        else if (DeltaTouchX > 10)
-        {         
+        else if (DeltaTouchX > 10 && !SetupEnCours)
+        {
             PageActu = pageConfiguration;
             PageDelta = -480; // Delta en pixels
         }
@@ -202,6 +205,12 @@ void loopEcran()
             break;
           case pageGlucoseSettings:
             handleTouch_GlucoseSettings(touchX, touchY);
+            break;
+          case pageSetupChoice:
+            handleTouch_SetupChoice(touchX, touchY);
+            break;
+          case pageAPInfo:
+            handleTouch_APInfo(touchX, touchY);
             break;
           }
         }

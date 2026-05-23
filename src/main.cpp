@@ -101,8 +101,10 @@ void setup()
   InitEcran();
   LireSerial();
   // ===== Definition de la langue si non encore definie ====
-  if (LangueNonDefini)
-  {  
+  // Skip if ssid is also empty — WiFi setup takes priority on first boot;
+  // language/timezone can be changed later via the Configuration menu.
+  if (LangueNonDefini && ssid.length() > 0)
+  {
     QuestionConfiguration(T("Lang"), pageLangueSetup);
     QuestionConfiguration(T("F_Hor"), pageFuseauSetup);
   }
@@ -112,6 +114,9 @@ void setup()
   CanvaBase->flush();
   esp_task_wdt_reset();
   delay(1);
+  // Normal path (ssid set): Init_Server() is called here after WiFi connects.
+  // First-boot path (ssid empty): Init_Internet() enters a blocking loop;
+  // Init_Server() is called from StartAPMode() after the AP is configured.
   Init_Server();
   LireSerial();
 

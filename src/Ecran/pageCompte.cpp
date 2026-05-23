@@ -273,8 +273,19 @@ void handleTouch_Compte(uint16_t touchX, uint16_t touchY)
         
         if (loginSuccess)
         {
+            // "Connection OK" on the left, countdown digits on the far right — same baseline
             CanvaBase->setFont(u8g2_font_helvB18_tf);
-            PrintCentre(CanvaBase, T("ConnectOK"), EcranW / 2, 255, 1);
+            PrintGauche(CanvaBase, T("ConnectOK"), 10, 258, 1);
+            CanvaBase->flush();
+            // Countdown to the right of the success message, well above the TEST button (y=288)
+            for (int i = 3; i > 0; i--) {
+                CanvaBase->fillRect(EcranW - 82, 240, 78, 26, C_grisFonce);
+                PrintCentre(CanvaBase, String(i) + "..", EcranW - 43, 258, 1);
+                CanvaBase->flush();
+                delay(1000);
+            }
+            // Changing family (pageCompte/10=2 → pageAccueil/10=0) exits QuestionConfiguration loop
+            PageActu = pageAccueil;
         }
         else
         { //Problème
@@ -284,8 +295,7 @@ void handleTouch_Compte(uint16_t touchX, uint16_t touchY)
             } else {
                  PrintCentre(CanvaBase, T("ServerNoAccess"), EcranW / 2, 255, 1);
             }
-            
+            CanvaBase->flush();
         }
-        CanvaBase->flush();
     }
 }
