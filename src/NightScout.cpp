@@ -79,12 +79,14 @@ bool testNightScoutConnection()
 }
 
 // Fetch up to 288 entries (24h at 5-min intervals) from /api/v1/entries.json.
-// Uses streaming deserialization with a filter to keep heap usage low.
+// Uses getString() (same pattern as Dexcom) for reliable buffered reads over HTTPS.
 void getNightScoutReadings()
 {
     if (nightscoutUrl.length() == 0) return;
 
-    String url = nightscoutUrl + "/api/v1/entries.json?count=288";
+    // 96 entries = 8 hours at 5-min CGM intervals — matches the ~5h LibreView window
+    // and keeps bar chart bars wide enough to be readable (~3 px each at 290 px width).
+    String url = nightscoutUrl + "/api/v1/entries.json?count=96";
     if (nightscoutToken.length() > 0) {
         url += "&token=" + nightscoutToken;
     }
@@ -101,22 +103,27 @@ void getNightScoutReadings()
 
     if (httpCode != HTTP_CODE_OK) {
         EcranPrintln(HEURE + T("GlucoFailed") + String(httpCode), RGB565_ORANGE);
-        Serial.println("NightScout entries error: " + https.getString());
         https.end();
         return;
     }
 
+    // Buffer the full response before parsing — getStream() is unreliable for large
+    // HTTPS responses with chunked transfer encoding on ESP32.
+    String response = https.getString();
+    https.end();
+
+    Serial.println("NightScout response length: " + String(response.length()));
+    GraphJSON = response;
+
     // Filter: retain only the three fields we need to minimise ArduinoJson heap usage.
-    // The raw response for 288 entries can be 50-80 KB; the filter keeps only ~10 KB.
     JsonDocument filter;
     filter[0]["sgv"]       = true;
     filter[0]["date"]      = true;
     filter[0]["direction"] = true;
 
     JsonDocument doc;
-    DeserializationError error = deserializeJson(doc, https.getStream(),
+    DeserializationError error = deserializeJson(doc, response,
                                                  DeserializationOption::Filter(filter));
-    https.end();
 
     if (error) {
         Serial.println("NightScout JSON parse error: " + String(error.c_str()));

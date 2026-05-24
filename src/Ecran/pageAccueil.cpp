@@ -231,8 +231,14 @@ void AccueiLoop()
         int16_t x, y, last_x;
         int lastHeure = -1;
         unsigned long Tmin = 0, Tmax = 0;
-        Tmin   = glucoseHeure[0];
-        Tmax   = glucoseHeure[pointCountGly - 1];
+        Tmax = glucoseHeure[pointCountGly - 1];
+        // Standardised 8-hour display window for all sensor sources.
+        // If less than 8h of data is available, show whatever is stored.
+        const unsigned long CHART_WINDOW_S = 8UL * 3600UL; // 28 800 s
+        Tmin = (Tmax > CHART_WINDOW_S) ? Tmax - CHART_WINDOW_S : glucoseHeure[0];
+        // Skip points older than the display window to avoid out-of-bounds X positions.
+        int iStart = 0;
+        while (iStart < pointCountGly - 1 && glucoseHeure[iStart] < Tmin) iStart++;
         last_x = X0;
         float DT = float(W) / float(Tmax - Tmin);
         CanvaAccueil->setFont(u8g2_font_6x10_tf);
@@ -247,7 +253,7 @@ void AccueiLoop()
             PrintDroite(CanvaAccueil, Seuil, X0, y, 1);
             CanvaAccueil->fillRect(X0, y, W, y2 - y, CouleursFond[c]);
         }
-        for (int i = 0; i < pointCountGly; i++)
+        for (int i = iStart; i < pointCountGly; i++)
         {
             x = X0 + int(DT * float(glucoseHeure[i] - Tmin));
             y = (int)(H * (constrain(glucoseValues[i], glucoseRangeMin, glucoseRangeMax) - glucoseRangeMin) / rangeSpan);

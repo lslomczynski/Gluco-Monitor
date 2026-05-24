@@ -143,7 +143,7 @@ void getDexcomReadings()
     
     String url = dexcomBaseURL + String(DEXCOM_GLUCOSE_ENDPOINT) +
                  "?sessionId=" + dexcomSessionId +
-                 "&minutes=1440&maxCount=288"; // 288 = 24h of 5-min readings
+                 "&minutes=480&maxCount=96"; // 96 = 8h of 5-min readings
 
     Serial.println("URL Dexcom: " + url);
     https.begin(url);

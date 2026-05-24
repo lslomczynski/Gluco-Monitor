@@ -57,9 +57,17 @@ void CompteSetup()
     CanvaBase->drawRoundRect(btn3X, 35, bw, 35, 8, RGB565_WHITE);
 
     CanvaBase->setFont(u8g2_font_helvB14_tf);
-    PrintCentre(CanvaBase, "FreeStyle",  btn1X + bw / 2, 55, 1);
-    PrintCentre(CanvaBase, "Dexcom",     btn2X + bw / 2, 55, 1);
-    PrintCentre(CanvaBase, "NightScout", btn3X + bw / 2, 55, 1);
+    // Compute baseline Y so the label is vertically centred inside the button.
+    // Button spans Y=35 to Y=70 (height=35). Use the Bouton_Trace formula:
+    //   baseline = buttonY0 + (buttonH + textHeight) / 2 - 2
+    {
+        int16_t tx1, ty1; uint16_t tw, th;
+        CanvaBase->getTextBounds("FreeStyle", 0, 0, &tx1, &ty1, &tw, &th);
+        int textY = 35 + (35 + (int)th) / 2 - 2;
+        PrintCentre(CanvaBase, "FreeStyle",  btn1X + bw / 2, textY, 1);
+        PrintCentre(CanvaBase, "Dexcom",     btn2X + bw / 2, textY, 1);
+        PrintCentre(CanvaBase, "NightScout", btn3X + bw / 2, textY, 1);
+    }
 
     // --- Line 3 + credentials, depend on selected sensor ---
     if (sensorType == SENSOR_LIBRE)
