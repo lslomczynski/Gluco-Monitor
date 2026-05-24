@@ -33,6 +33,7 @@ v3.2 : Correction du mapping des flèches de tendance Dexcom
 #include "Heure.h"
 #include "Libreview.h"
 #include "Dexcom.h"
+#include "NightScout.h"
 #include "Config.h"
 #include "Stock.h"
 #include "Serie.h"
@@ -169,6 +170,10 @@ void loop()
     else if (sensorType == SENSOR_DEXCOM)
     {
       LectureDexcom();
+    }
+    else if (sensorType == SENSOR_NIGHTSCOUT)
+    {
+      LectureNightScout();
     }
     FormatteHeureDate();
   }

@@ -5,7 +5,9 @@
       "PowerShell(cd \"C:\\\\Users\\\\luslo\\\\Documents\\\\GitHub\\\\Gluco-Monitor\"; & \"$env:USERPROFILE\\\\.platformio\\\\penv\\\\Scripts\\\\pio.exe\" run 2>&1 | Select-Object -Last 10)",
       "PowerShell(cd \"C:\\\\Users\\\\luslo\\\\Documents\\\\GitHub\\\\Gluco-Monitor\"; & \"$env:USERPROFILE\\\\.platformio\\\\penv\\\\Scripts\\\\pio.exe\" run 2>&1 | Select-Object -Last 5)",
       "Bash(pio run *)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\luslo\\\\Documents\\\\GitHub\\\\Gluco-Monitor\" -Recurse -File)",
+      "Bash(Select-Object FullName)"
     ]
   }
 }

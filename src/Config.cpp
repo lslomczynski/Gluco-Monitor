@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "Dexcom.h"
 #include "Libreview.h"
+#include "NightScout.h"
 
 //============ Version et Build ==========
 const char* Version = PROG_VERSION;
@@ -20,6 +21,10 @@ bool ServerConnu = false;
 String dexcomUsername = "";
 String dexcomPassword = "";
 String dexcomRegion = "Non-US"; // Default to "Non-US" region
+
+// NightScout configuration
+String nightscoutUrl   = "";
+String nightscoutToken = "";
 
 // Sensor selection
 SensorType sensorType = SENSOR_LIBRE; // Default to FreeStyle Libre
@@ -127,8 +132,11 @@ void clearData()
     
     // Clear Dexcom cache
     clearDexcomCache();
-    
+
     // Clear LibreView cache
     clearLibreViewCache();
+
+    // Clear NightScout cache
+    clearNightScoutCache();
 }
     

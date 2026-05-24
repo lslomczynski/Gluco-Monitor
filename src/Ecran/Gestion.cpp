@@ -174,6 +174,8 @@ void loopEcran()
           case pageClavier_ComptePwd:
           case pageClavier_DexcomUsername:
           case pageClavier_DexcomPwd:
+          case pageClavier_NightScoutUrl:
+          case pageClavier_NightScoutToken:
             handleTouch_clavier(touchX, touchY);
             break;
           case pageCompte:
@@ -266,12 +268,12 @@ void loopEcran()
         break;
         // Pages Fixes
       case pageClavier_WifiPwd:
-        loop_touch_clavier();
-        break;
       case pageClavier_CompteEmail:
-        loop_touch_clavier();
-        break;
       case pageClavier_ComptePwd:
+      case pageClavier_DexcomUsername:
+      case pageClavier_DexcomPwd:
+      case pageClavier_NightScoutUrl:
+      case pageClavier_NightScoutToken:
         loop_touch_clavier();
         break;
       case pageAutBrute:

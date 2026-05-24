@@ -6,7 +6,8 @@
 // Sensor types
 enum SensorType {
     SENSOR_LIBRE = 0,
-    SENSOR_DEXCOM = 1
+    SENSOR_DEXCOM = 1,
+    SENSOR_NIGHTSCOUT = 2
 };
 
 enum GlucoseUnit {
@@ -42,6 +43,10 @@ extern bool ServerConnu;
 extern String dexcomUsername;
 extern String dexcomPassword;
 extern String dexcomRegion;
+
+// NightScout configuration
+extern String nightscoutUrl;
+extern String nightscoutToken;
 
 // Sensor selection
 extern SensorType sensorType;

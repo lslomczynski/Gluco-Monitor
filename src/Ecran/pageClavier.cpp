@@ -6,6 +6,7 @@
 #include "Ecran/pageWifiList.h"
 #include "Stock.h"
 #include "Langues/Langue.h"
+#include "NightScout.h"
 // ==========================
 // PARAMETRES
 // ==========================
@@ -180,11 +181,11 @@ void handleTouch_clavier(int tx, int ty)
               PageActu = pageConfiguration;
             return;
           }
-          if (PageActu == pageClavier_CompteEmail || PageActu == pageClavier_ComptePwd ||
-              PageActu == pageClavier_DexcomUsername || PageActu == pageClavier_DexcomPwd)
+          if (PageActu == pageClavier_CompteEmail  || PageActu == pageClavier_ComptePwd ||
+              PageActu == pageClavier_DexcomUsername || PageActu == pageClavier_DexcomPwd ||
+              PageActu == pageClavier_NightScoutUrl  || PageActu == pageClavier_NightScoutToken)
           {
             CompteSetup();
-      
             return;
           }
         }
@@ -229,6 +230,22 @@ void handleTouch_clavier(int tx, int ty)
           if (PageActu == pageClavier_DexcomPwd)
           {
             dexcomPassword = textBuffer;
+            RecordFichierParametres();
+            lastDemandeGlycMillis = 0; // Reset timer to trigger immediate glucose fetch
+            CompteSetup();
+            return;
+          }
+          if (PageActu == pageClavier_NightScoutUrl)
+          {
+            nightscoutUrl = textBuffer;
+            RecordFichierParametres();
+            lastDemandeGlycMillis = 0; // Reset timer to trigger immediate glucose fetch
+            CompteSetup();
+            return;
+          }
+          if (PageActu == pageClavier_NightScoutToken)
+          {
+            nightscoutToken = textBuffer;
             RecordFichierParametres();
             lastDemandeGlycMillis = 0; // Reset timer to trigger immediate glucose fetch
             CompteSetup();
@@ -295,6 +312,16 @@ void setup_clavier()
   {
     Titre = T("PasseDexcom");
     textBuffer = dexcomPassword;
+  }
+  if (PageActu == pageClavier_NightScoutUrl)
+  {
+    Titre = T("NightScoutURL");
+    textBuffer = nightscoutUrl;
+  }
+  if (PageActu == pageClavier_NightScoutToken)
+  {
+    Titre = T("NightScoutToken");
+    textBuffer = nightscoutToken;
   }
 
   CanvaBase->setTextColor(RGB565_BLACK);

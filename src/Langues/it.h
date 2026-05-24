@@ -101,6 +101,10 @@ inline const char *LangIT = R"====(
   "SetupAP":"Configurare via Wi-Fi",
   "APConnect":"Connettiti a questa rete WiFi:",
   "APPassword":"Password: monitor1",
-  "APOpenBrowser":"Poi apri nel browser:"
+  "APOpenBrowser":"Poi apri nel browser:",
+  "NightScoutIndefini":"Account NightScout non definito",
+  "SetNightScout":"Impostare i parametri NightScout",
+  "NightScoutURL":"URL NightScout",
+  "NightScoutToken":"Token di accesso"
 }
 )====";

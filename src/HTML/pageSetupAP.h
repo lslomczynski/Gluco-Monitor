@@ -101,6 +101,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   <div class="radio-row">
     <label><input type="radio" name="sensor" value="libre" checked onchange="showSensor()"> FreeStyle Libre</label>
     <label><input type="radio" name="sensor" value="dexcom" onchange="showSensor()"> Dexcom</label>
+    <label><input type="radio" name="sensor" value="nightscout" onchange="showSensor()"> NightScout</label>
   </div>
 </div>
 
@@ -138,6 +139,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
     <option value="US">US</option>
     <option value="JP">Japan</option>
   </select>
+</div>
+
+<div id="nightscoutSection" class="section" style="display:none">
+  <h2>NightScout</h2>
+  <label>NightScout URL</label>
+  <input type="text" id="nsurl" placeholder="https://yoursite.nightscout.net" autocomplete="off">
+  <label>Access Token</label>
+  <input type="text" id="nstoken" placeholder="NightScout access token" autocomplete="off">
 </div>
 
 <div class="section">
@@ -230,8 +239,9 @@ function gUnitChange() { gUpdate(); }
 
 function showSensor() {
   var s = document.querySelector('input[name=sensor]:checked').value;
-  document.getElementById('libreSection').style.display  = s === 'libre'  ? '' : 'none';
-  document.getElementById('dexcomSection').style.display = s === 'dexcom' ? '' : 'none';
+  document.getElementById('libreSection').style.display      = s === 'libre'       ? '' : 'none';
+  document.getElementById('dexcomSection').style.display     = s === 'dexcom'      ? '' : 'none';
+  document.getElementById('nightscoutSection').style.display = s === 'nightscout'  ? '' : 'none';
 }
 
 function doScan() {
@@ -274,6 +284,8 @@ function doSave() {
     + '&dexuser='               + encodeURIComponent(document.getElementById('dexuser').value.trim())
     + '&dexpass='               + encodeURIComponent(document.getElementById('dexpass').value)
     + '&dexregion='             + encodeURIComponent(document.getElementById('dexregion').value)
+    + '&nsurl='                 + encodeURIComponent(document.getElementById('nsurl').value.trim())
+    + '&nstoken='               + encodeURIComponent(document.getElementById('nstoken').value)
     + '&lang='                  + encodeURIComponent(document.getElementById('lang').value)
     + '&timezone='              + encodeURIComponent(document.getElementById('timezone').value)
     + '&glucoseUnit='           + encodeURIComponent(document.querySelector('input[name=gunit]:checked').value)

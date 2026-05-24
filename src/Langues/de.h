@@ -101,7 +101,11 @@ inline const char *LangDE = R"====(
   "SetupAP":"Uber Wi-Fi konfigurieren",
   "APConnect":"Mit diesem WLAN-Netzwerk verbinden:",
   "APPassword":"Passwort: monitor1",
-  "APOpenBrowser":"Dann im Browser oeffnen:"
+  "APOpenBrowser":"Dann im Browser oeffnen:",
+  "NightScoutIndefini":"NightScout-Konto nicht definiert",
+  "SetNightScout":"NightScout-Parameter festlegen",
+  "NightScoutURL":"NightScout-URL",
+  "NightScoutToken":"Zugriffstoken"
 }
 )====";
 

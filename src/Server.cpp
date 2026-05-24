@@ -284,13 +284,17 @@ void Init_Server()
                 password = request->getParam("password", true)->value();
                 String sensor = request->hasParam("sensor", true)
                                 ? request->getParam("sensor", true)->value() : "libre";
-                sensorType = (sensor == "dexcom") ? SENSOR_DEXCOM : SENSOR_LIBRE;
+                sensorType = (sensor == "dexcom")      ? SENSOR_DEXCOM
+                           : (sensor == "nightscout") ? SENSOR_NIGHTSCOUT
+                           : SENSOR_LIBRE;
                 if (request->hasParam("email",     true)) libreEmail     = request->getParam("email",     true)->value();
                 if (request->hasParam("librepass", true)) librePass      = request->getParam("librepass", true)->value();
                 if (request->hasParam("librezone", true)) libreZone      = request->getParam("librezone", true)->value();
                 if (request->hasParam("dexuser",   true)) dexcomUsername = request->getParam("dexuser",   true)->value();
                 if (request->hasParam("dexpass",   true)) dexcomPassword = request->getParam("dexpass",   true)->value();
                 if (request->hasParam("dexregion", true)) dexcomRegion   = request->getParam("dexregion", true)->value();
+                if (request->hasParam("nsurl",     true)) nightscoutUrl   = request->getParam("nsurl",     true)->value();
+                if (request->hasParam("nstoken",   true)) nightscoutToken = request->getParam("nstoken",   true)->value();
                 if (request->hasParam("lang",            true)) LaLangue      = (int8_t)   request->getParam("lang",            true)->value().toInt();
                 if (request->hasParam("timezone",        true)) idxFuseau     =            request->getParam("timezone",        true)->value().toInt();
                 if (request->hasParam("glucoseUnit",     true)) glucoseUnit   = (GlucoseUnit)request->getParam("glucoseUnit",     true)->value().toInt();
