@@ -1,101 +1,170 @@
 ![Gluco-Monitor](https://github.com/user-attachments/assets/543aca45-7e8a-4507-a81c-04a6f4bc0d6f)
+
 # Gluco-Monitor (DIY)
 
-Gluco-Monitor is an open-source, low-cost device designed to display real-time glucose data from continuous glucose monitoring (CGM) systems such as **FreeStyle Libre** or **Dexcom**.
+**Gluco-Monitor** is an open-source DIY glucose monitor built on an ESP32-S3 with a 320×480 touchscreen. It retrieves real-time CGM data from **FreeStyle Libre**, **Dexcom**, or **NightScout** and displays it on a dedicated always-on screen — no phone needed.
 
-This project was originally developed to provide a simple, always-visible glucose display for everyday use — without needing to constantly check a smartphone.
-
----
-
-## 🚀 Features
-
-* 📊 Real-time glucose display
-* 📈 Trend indication (rising, falling, stable)
-* 🕒 History visualization at a glance
-* 📡 Wireless data retrieval from CGM apps (e.g., Libre / Dexcom)
-* 💡 Simple and clean interface
-* 🔧 Fully DIY and open-source
-* 💰 Low cost (~$25)
+> ⚠️ **Not a medical device.** Do not use for medical decisions. Always rely on your official CGM device and your healthcare provider's advice.
 
 ---
 
-## 🧠 How It Works
+## ✨ Features
 
-Modern CGM systems like the FreeStyle Libre continuously measure glucose levels and transmit data to a smartphone every minute via Bluetooth ([FreeStyle][1]).
-
-Gluco-Monitor connects to this ecosystem by retrieving glucose data (via compatible apps or APIs) and displaying it on a dedicated screen.
-
-This allows users to:
-
-* See their glucose instantly without unlocking their phone
-* Monitor trends more easily
-* Improve daily diabetes management
+| Category | Details |
+|----------|---------|
+| **Data sources** | FreeStyle Libre (LibreLinkUp API), Dexcom Share, NightScout REST API |
+| **Display** | Real-time glucose value, trend arrow, age indicator, 8-hour bar chart; tap glucose value to switch to full-screen large gauge view |
+| **Units** | mg/dL or mmol/L (user-selectable) |
+| **Thresholds** | Configurable target range, warning levels, gauge scale |
+| **Languages** | English, Français, Deutsch, Español, Italiano, Polski |
+| **Web dashboard** | Real-time view at `http://<device-ip>/` from any browser on your network |
+| **OTA updates** | Firmware update via web interface — no cable needed |
+| **First-boot setup** | On-screen wizard **or** Wi-Fi AP captive portal (mobile-friendly) |
+| **Persistence** | All settings saved to LittleFS — survive power cycles |
+| **Cost** | ~$25 USD for components |
 
 ---
 
 ## 🛠️ Hardware
 
-Typical components include:
+| Component | Specification |
+|-----------|---------------|
+| Microcontroller | **ESP32-S3** (esp32-s3-devkitc-1) |
+| Flash | 16 MB QIO |
+| PSRAM | OPI mode |
+| Display | **320×480 AXS15231B** TFT touchscreen |
+| Touch | I2C controller (address 0x3B) |
+| Wi-Fi | 802.11 b/g/n (built-in) |
+| Power | USB or battery |
 
-* ESP32-based board
-* Small TFT display
-* Power supply (USB or battery)
-
-👉 Total cost is typically around **$25**
-
----
-
-## 💻 Software
-
-The firmware is developed using:
-
-* Arduino / PlatformIO
-* Wi-Fi connectivity for data access
-* Lightweight graphical interface
+👉 Full hardware assembly guide: **https://f1atb.fr/gluco-monitor-diy/**
 
 ---
 
 ## 📦 Installation
 
-Quick Software installation here :
-👉 https://f1atb.fr/gluco-monitor-diy/quick-software-installation/
+### Prerequisites
+- [PlatformIO](https://platformio.org/) (VS Code extension or CLI)
+- ESP32-S3 board with 16 MB flash and OPI PSRAM
 
-or 
-
-1. Clone this repository:
+### Build & Flash
 
 ```bash
-git clone https://github.com/your-username/gluco-monitor.git
+# Clone the repository
+git clone https://github.com/F1ATB/Gluco-Monitor.git
+cd Gluco-Monitor
+
+# Build firmware
+pio run
+
+# Build and flash to device
+pio run -t upload
+
+# Monitor serial output (115200 baud)
+pio device monitor
 ```
 
-2. Open the project with PlatformIO or Arduino IDE
+> **Note:** GFX Library for Arduino v1.6.1+ is incompatible with this project — it is pinned to `^1.5.3` in `platformio.ini`.
 
-3. Upload to your ESP32 device
-   
-4. Configure your Wi-Fi and data source (Libre / Dexcom)
+The build produces `Gluco-Monitor_<version>.bin`. A merged full-chip image (`Gluco-Monitor_<version>.factory.bin`, including bootloader and partition table) is also generated for first-time flashing with `esptool`.
 
 ---
 
-## 🔗 Documentation & Build Guide
+## 🚀 First-Boot Setup
 
-Full step-by-step instructions are available here:
+On first power-on (no Wi-Fi configured), the device offers two setup methods:
 
-👉 https://f1atb.fr/gluco-monitor-diy/
+**Option A — On-Screen Setup**
+1. Select your Wi-Fi network from the on-screen list
+2. Enter the password with the on-screen keyboard
+3. Choose language, timezone, sensor type, and credentials
+4. Device connects and starts displaying glucose data
 
-This includes:
-
-* Hardware assembly
-* Wiring diagrams
-* Firmware setup
-* Configuration details
+**Option B — AP (Captive Portal) Mode**
+1. Device broadcasts a temporary Wi-Fi network: `GlucoMonit-xxxxx` (password: `monitor1`)
+2. Connect with your phone — the setup page opens automatically
+3. Fill in: Wi-Fi credentials, sensor type & credentials, glucose thresholds, language, timezone
+4. Tap Save → device restarts in normal mode
 
 ---
 
-## ⚠️ Disclaimer
+## 📡 Supported Sensors
 
-This project is **not a medical device** and must not be used for medical decisions.
+| Sensor | API | Authentication |
+|--------|-----|----------------|
+| **FreeStyle Libre** | LibreLinkUp | Email + password + region |
+| **Dexcom** | Dexcom Share | Username + password + region (US / Non-US / JP) |
+| **NightScout** | REST API v1 | URL + access token (token optional for public instances) |
 
-Always rely on official CGM devices and medical advice for diabetes management.
+Switch between sensors at any time in the **Account** screen. Glucose history is cleared automatically when switching sources.
+
+---
+
+## 🌐 Web Dashboard
+
+Open `http://<device-ip>/` from any browser on the same Wi-Fi network for a real-time glucose view.
+
+Key endpoints:
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /` | Main dashboard |
+| `GET /ajaxGlycemie` | Current reading (JSON, polled by UI) |
+| `GET /dataGly` | 8-hour glucose history (binary blob) |
+| `GET /OTA` | OTA firmware upload (requires on-device authorization) |
+| `GET /Restart` | Restart the device |
+| `GET /eraseConfig` | Erase all saved configuration and restart |
+
+---
+
+## 🔄 OTA Firmware Update
+
+1. Open `http://<device-ip>/OTA` in your browser
+2. Authorize the update on the physical display (touch prompt, valid for 3 minutes)
+3. Select and upload `Gluco-Monitor_<version>.bin`
+4. Device restarts automatically with the new firmware
+
+---
+
+## 🔧 Configuration Reference
+
+All settings are stored in `/parametres.json` on the device's LittleFS filesystem and persist across reboots.
+
+Key glucose thresholds (defaults in mg/dL):
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `glucoseRangeMin` | 0 mg/dL | Gauge scale minimum |
+| `targetLow` | 70 mg/dL | Lower bound of green target range |
+| `targetHigh` | 180 mg/dL | Upper bound of green target range |
+| `glucoseWarn` | 300 mg/dL | Upper warning threshold |
+| `glucoseRangeMax` | 400 mg/dL | Gauge scale maximum |
+
+---
+
+## 🏗️ Architecture Overview
+
+```
+src/
+├── main.cpp              # Setup, loop, watchdog, sensor dispatch
+├── Config.h / Config.cpp # All global state (extern declarations + definitions)
+├── Stock.cpp             # LittleFS persistence (/parametres.json)
+├── Libreview.cpp         # FreeStyle Libre API client
+├── Dexcom.cpp            # Dexcom Share API client
+├── NightScout.cpp        # NightScout REST API client
+├── Server.cpp            # AsyncWebServer (port 80)
+├── Heure.cpp             # NTP time sync, timezone, brightness control
+├── Ecran/
+│   ├── Gestion.cpp       # Display driver init, touch, page routing
+│   ├── pageAccueil.cpp   # Home screen (gauge + 8-hour bar chart)
+│   ├── pageCompte.cpp    # Sensor account configuration
+│   ├── pageClavier.cpp   # On-screen QWERTY/AZERTY keyboard
+│   └── page*.cpp         # Other configuration screens
+├── Langues/              # Language strings as JSON (en/fr/de/es/it/pl)
+└── HTML/                 # Embedded web assets (C string literals in .h files)
+```
+
+Pages 0–2 are the rotating home / config / messages trio. Pages 10+ are fixed full-screen pages defined in `Ecran/Gestion.h`. Add new pages by creating a `page*.h/.cpp` pair and a `#define` constant.
 
 ---
 
@@ -103,36 +172,38 @@ Always rely on official CGM devices and medical advice for diabetes management.
 
 Contributions are welcome!
 
-Feel free to:
-
-* Open issues
-* Suggest improvements
-* Submit pull requests
+- Open issues for bugs or feature requests
+- Submit pull requests
+- Add new language translations — see `src/Langues/` (6 language files + update `Langue.cpp` and `Server.cpp`)
+- Port to other displays or boards
 
 ---
 
 ## 📄 License
 
-This project is open-source. See the LICENSE file for details.
+This project is open-source. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## ⚠️ Disclaimer
+
+This project is **not a medical device** and must not be used for medical decisions.
+
+Always rely on your official CGM device and your healthcare provider's advice for diabetes management.
 
 ---
 
 ## ❤️ Acknowledgments
 
-* CGM community and open-source contributors
-* Projects like xDrip+ and Nightscout
-* Developers working on diabetes technology
+- The CGM and open-source diabetes community
+- Projects like xDrip+, Nightscout, and LibreLink Up
+- All contributors and testers
 
 ---
 
 ## ⭐ Support the Project
 
-If you like this project:
-
-* ⭐ Star the repository
-* Share it with others
-* Build your own and contribute improvements!
-
----
-
-[1]: https://pro.freestyle.abbott/ch-fr/gamme-freestyle/systemes-freestyle-libre/freestyle-libre-3.html?utm_source=chatgpt.com "FreeStyle Libre 3 System | Suisse | Professionnels de santé | Abbott"
+If this project is useful to you:
+- ⭐ Star the repository
+- Share it with the diabetes DIY community
+- Build your own and contribute improvements!

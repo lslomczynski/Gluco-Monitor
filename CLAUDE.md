@@ -36,7 +36,7 @@ OTA updates are also available at `http://<device-ip>/OTA` after authorizing acc
 ### Global State (`src/Config.h` / `src/Config.cpp`)
 All shared variables (WiFi credentials, sensor credentials, glucose thresholds, current readings, timing counters) are declared `extern` in `Config.h` and defined in `Config.cpp`. This is the single source of truth for runtime state. New cross-module variables go here.
 
-Key enums: `SensorType` (LIBRE/DEXCOM), `GlucoseUnit` (mg/dL / mmol/L), `GlucoseColor` (white/colour).
+Key enums: `SensorType` (LIBRE/DEXCOM/NIGHTSCOUT), `GlucoseUnit` (mg/dL / mmol/L), `GlucoseColor` (white/colour).
 
 ### Persistence (`src/Stock.cpp`)
 Configuration is stored in LittleFS at `/parametres.json`. `ReadFichierParametres()` deserializes it into global variables on boot; `RecordFichierParametres()` serializes them back. `DeserializeConfiguration()` / `SerializeConfiguration()` handle the JSON mapping. Call `RecordFichierParametres()` whenever a setting changes.
@@ -44,8 +44,9 @@ Configuration is stored in LittleFS at `/parametres.json`. `ReadFichierParametre
 ### Sensor Data Acquisition
 - **FreeStyle Libre** — `src/Libreview.h` / `.cpp`: Calls LibreLinkUp API (`loginLibreLinkUp()`, `LectureGlycemie()`). Polled every `RecurrenceGlycemie` (2 min) from `loop()`.
 - **Dexcom** — `src/Dexcom.h` / `.cpp`: Calls Dexcom Share API (`loginDexcomShare()`, `getDexcomReadings()`, `LectureDexcom()`). Same polling interval.
+- **NightScout** — `src/NightScout.h` / `.cpp`: Calls NightScout REST API (`testNightScoutConnection()`, `getNightScoutReadings()`, `LectureNightScout()`). JWT access token sent as `?token=` URL parameter. Adaptive polling identical to Dexcom (315 s normal, 90 s stale, 30 s missed update).
 
-Both populate `glucoseValues[]`, `glucoseHeure[]`, `GlycemieVal`, `TrendArrow`, `lastGlyUnixTime`, and the JSON strings `LoginJSON`, `GraphJSON`, `ConnectionJSON` (stored in PSRAM).
+All three populate `glucoseValues[]`, `glucoseHeure[]`, `GlycemieVal`, `TrendArrow`, `lastGlyUnixTime`, and the JSON strings `LoginJSON`, `GraphJSON`, `ConnectionJSON` (stored in PSRAM).
 
 `TrendArrow` values: -1=DoubleDown, 1=Down, 2=DownRight, 3=Right, 4=UpRight, 5=Up, 6=DoubleUp.
 
