@@ -54,8 +54,9 @@ void AccueiLoop()
     if (Glycemie == "")
     {
         CanvaAccueil->setFont(u8g2_font_helvB18_tf);
-        bool hasCredentials = (sensorType == SENSOR_LIBRE && libreEmail.length() >= 4) ||
-                              (sensorType == SENSOR_DEXCOM && dexcomUsername.length() >= 4);
+        bool hasCredentials = (sensorType == SENSOR_LIBRE      && libreEmail.length()    >= 4) ||
+                              (sensorType == SENSOR_DEXCOM      && dexcomUsername.length() >= 4) ||
+                              (sensorType == SENSOR_NIGHTSCOUT  && nightscoutUrl.length()  >= 8);
         if (ssid.length() == 0 || !hasCredentials)
             PrintCentre(CanvaAccueil, T("ConfNul"), W2, valY, 1);
         else

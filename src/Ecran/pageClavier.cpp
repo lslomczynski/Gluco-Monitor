@@ -316,7 +316,8 @@ void setup_clavier()
   if (PageActu == pageClavier_NightScoutUrl)
   {
     Titre = T("NightScoutURL");
-    textBuffer = nightscoutUrl;
+    // Pre-populate with "https://" when the field is still empty
+    textBuffer = (nightscoutUrl.length() == 0) ? "https://" : nightscoutUrl;
   }
   if (PageActu == pageClavier_NightScoutToken)
   {

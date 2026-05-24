@@ -35,29 +35,31 @@ void CompteSetup()
     PrintCentre(CanvaBase, T("SensorType"), EcranW / 2, 25, 1);
 
     // --- Line 2: three sensor-type buttons (FreeStyle / Dexcom / NightScout) ---
-    // 4 gaps × 5 px = 20 px; remaining 300 px / 3 = 100 px each
-    int bw = (EcranW - 20) / 3; // 100 px per button
-    // X origins:  5, 5+100+5=110, 110+100+5=215
-    // Centre X:  55, 160, 265
+    // 4 gaps × 7 px = 28 px total; remaining width / 3 per button.
+    // All X positions computed from bw so layout scales with EcranW.
+    int bw    = (EcranW - 28) / 3;
+    int btn1X = 7;
+    int btn2X = btn1X + bw + 7;
+    int btn3X = btn2X + bw + 7;
     // All buttons: Y=35, height=35, text baseline Y≈55
 
     uint16_t libreColor      = (sensorType == SENSOR_LIBRE)      ? RGB565_GREEN : RGB565_NAVY;
     uint16_t dexcomColor     = (sensorType == SENSOR_DEXCOM)     ? RGB565_GREEN : RGB565_NAVY;
     uint16_t nightscoutColor = (sensorType == SENSOR_NIGHTSCOUT) ? RGB565_GREEN : RGB565_NAVY;
 
-    CanvaBase->fillRoundRect(5,         35, bw, 35, 8, libreColor);
-    CanvaBase->drawRoundRect(5,         35, bw, 35, 8, RGB565_WHITE);
+    CanvaBase->fillRoundRect(btn1X, 35, bw, 35, 8, libreColor);
+    CanvaBase->drawRoundRect(btn1X, 35, bw, 35, 8, RGB565_WHITE);
 
-    CanvaBase->fillRoundRect(110,       35, bw, 35, 8, dexcomColor);
-    CanvaBase->drawRoundRect(110,       35, bw, 35, 8, RGB565_WHITE);
+    CanvaBase->fillRoundRect(btn2X, 35, bw, 35, 8, dexcomColor);
+    CanvaBase->drawRoundRect(btn2X, 35, bw, 35, 8, RGB565_WHITE);
 
-    CanvaBase->fillRoundRect(215,       35, bw, 35, 8, nightscoutColor);
-    CanvaBase->drawRoundRect(215,       35, bw, 35, 8, RGB565_WHITE);
+    CanvaBase->fillRoundRect(btn3X, 35, bw, 35, 8, nightscoutColor);
+    CanvaBase->drawRoundRect(btn3X, 35, bw, 35, 8, RGB565_WHITE);
 
     CanvaBase->setFont(u8g2_font_helvB14_tf);
-    PrintCentre(CanvaBase, "FreeStyle",  55,  55, 1);
-    PrintCentre(CanvaBase, "Dexcom",    160,  55, 1);
-    PrintCentre(CanvaBase, "NightScout", 265, 55, 1);
+    PrintCentre(CanvaBase, "FreeStyle",  btn1X + bw / 2, 55, 1);
+    PrintCentre(CanvaBase, "Dexcom",     btn2X + bw / 2, 55, 1);
+    PrintCentre(CanvaBase, "NightScout", btn3X + bw / 2, 55, 1);
 
     // --- Line 3 + credentials, depend on selected sensor ---
     if (sensorType == SENSOR_LIBRE)
@@ -148,12 +150,16 @@ void handleTouch_Compte(uint16_t touchX, uint16_t touchY)
     // --- Sensor type selection: three buttons (Y=35..70) ---
     if (touchY >= 35 && touchY <= 70)
     {
-        int bw = (EcranW - 20) / 3; // 100 px per button
+        // Mirror the geometry from CompteSetup() exactly
+        int bw    = (EcranW - 28) / 3;
+        int btn1X = 7;
+        int btn2X = btn1X + bw + 7;
+        int btn3X = btn2X + bw + 7;
 
         SensorType newType = sensorType;
-        if      (touchX >= 5   && touchX < 5   + bw) newType = SENSOR_LIBRE;
-        else if (touchX >= 110 && touchX < 110 + bw) newType = SENSOR_DEXCOM;
-        else if (touchX >= 215 && touchX < 215 + bw) newType = SENSOR_NIGHTSCOUT;
+        if      (touchX >= btn1X && touchX < btn1X + bw) newType = SENSOR_LIBRE;
+        else if (touchX >= btn2X && touchX < btn2X + bw) newType = SENSOR_DEXCOM;
+        else if (touchX >= btn3X && touchX < btn3X + bw) newType = SENSOR_NIGHTSCOUT;
 
         if (newType != sensorType) {
             sensorType = newType;

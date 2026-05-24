@@ -102,5 +102,9 @@ inline const char *LangPL = R"====(
   "APConnect":"Połącz się z tą siecią WiFi:",
   "APPassword":"Hasło: monitor1",
   "APOpenBrowser":"Następnie otwórz w przeglądarce:"
+  "NightScoutIndefini":"Konto NightScout niezdefiniowane",
+  "SetNightScout":"Ustaw parametry NightScout",
+  "NightScoutURL":"URL NightScout",
+  "NightScoutToken":"Token dostępu"
 }
 )====";
