@@ -104,28 +104,37 @@ void AccueiLoop()
 
         CanvaAccueil->setTextColor(glucoseInfoColor);
         // Glucose value
-        // Normal:    inb63_mn Sz=1 → 63 px
-        // altView_01: inb49_mn Sz=2 → 98 px
-        // altView_02: inb49_mn Sz=4 → ~196 px
+        // Normal:    inb63_mn Sz=1 → 63 px,  baseline at valY
+        // altView_01: inb49_mn Sz=2 → 98 px,  baseline at valY
+        // altView_02: inb49_mn Sz=3 → ~147 px, baseline at valY-20 (bottom edge aligned with unit label)
         if (viewMode == 0) {
             CanvaAccueil->setFont(u8g2_font_inb63_mn);
             PrintCentre(CanvaAccueil, formatGlucoseValue(GlycemieVal), W2, valY, 1);
-        } else {
+        } else if (viewMode == 1) {
             CanvaAccueil->setFont(u8g2_font_inb49_mn);
-            PrintCentre(CanvaAccueil, formatGlucoseValue(GlycemieVal), W2, valY, viewMode == 2 ? 4 : 2);
+            PrintCentre(CanvaAccueil, formatGlucoseValue(GlycemieVal), W2, valY, 2);
+        } else {
+            // altView_02: raise Y so bottom edge aligns with unit label baseline
+            CanvaAccueil->setFont(u8g2_font_inb49_mn);
+            PrintCentre(CanvaAccueil, formatGlucoseValue(GlycemieVal), W2, valY - 40, 3);
         }
         CanvaAccueil->setTextSize(1);  // always restore after glucose print
 
         // Unit label
-        // Normal:    left-aligned at W2+R0, y=valY-5 (10x20 font)
-        // altView_01/02: centred at mid of right arc ring width, y=valY-20 (helvB14 font)
-        if (viewMode > 0) {
+        // Normal:    left-aligned at W2+R0,               y=valY-5  (10x20 font)
+        // altView_01: centred at mid of right arc ring,    y=valY-20 (helvB14 font)
+        // altView_02: right-aligned at screen right edge,  y=valY-40 (helvB14 font)
+        if (viewMode == 0) {
+            CanvaAccueil->setFont(u8g2_font_10x20_tf);
+            PrintGauche(CanvaAccueil, getGlucoseUnitLabel(), unitX, valY - 5, 1);
+        } else if (viewMode == 1) {
             CanvaAccueil->setFont(u8g2_font_helvB14_tf);
             int16_t unitCX = W2 + (R0 + R1) / 2;
             PrintCentre(CanvaAccueil, getGlucoseUnitLabel(), unitCX, valY - 20, 1);
         } else {
-            CanvaAccueil->setFont(u8g2_font_10x20_tf);
-            PrintGauche(CanvaAccueil, getGlucoseUnitLabel(), unitX, valY - 5, 1);
+            // altView_02: right-aligned, same baseline as glucose value
+            CanvaAccueil->setFont(u8g2_font_helvB14_tf);
+            PrintDroite(CanvaAccueil, getGlucoseUnitLabel(), EcranW, valY - 40, 1);
         }
 
         glucoseInfoColor = tooOld ? RGB565(50, 50, 50) : RGB565_WHITE;
@@ -314,8 +323,10 @@ void AccueilHandleTouch(uint16_t x, uint16_t y)
     uint16_t hitY1 = (viewMode == 0) ? 110 : 187;
     uint16_t hitY2 = (viewMode == 0) ? 200 : 295;
 
-    if (x >= hitX1 && x <= hitX2 && y >= hitY1 && y <= hitY2)
+    if (x >= hitX1 && x <= hitX2 && y >= hitY1 && y <= hitY2) {
         viewMode = (viewMode + 1) % 3;  // 0 → 1 → 2 → 0
+        SuppressTouch(); // prevent ghost-tap on the new layout
+    }
 }
 
 void Trace_Gauge(Arduino_Canvas *canva, int cx, int cy, int r_inner, int r_outer)

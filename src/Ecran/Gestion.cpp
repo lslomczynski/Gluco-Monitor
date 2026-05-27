@@ -46,6 +46,15 @@ static int16_t DeltaTouchX = 0, DeltaTouchY = 0;
 
 static unsigned long LastClickMillis = 0, PeriodeRafraichissement = 0, ClickLong = 0, LastClickPageFixe = 0;
 
+// Minimum time (ms) to suppress touches after any page/layout transition.
+// Prevents a single tap from activating a button on the incoming page/layout.
+#define PAGE_CHANGE_DEBOUNCE_MS 400
+static unsigned long LastPageChangeMillis = 0;
+
+// Call this whenever a layout or page change is triggered by touch,
+// so that the debounce timer fires even without a PageActu change.
+void SuppressTouch() { LastPageChangeMillis = millis(); }
+
 // Ecran
 int16_t EcranW, EcranH, EcranW2, EcranH2, EcranH_20, EcranH_30;
 int8_t rotation = 1;
@@ -112,6 +121,17 @@ void InitEcran()
 
 void loopEcran()
 {
+  // Detect page transitions and start the input-suppression timer.
+  // This prevents a single tap from triggering buttons on both the outgoing
+  // and the incoming page (tap-through / ghost-tap problem).
+  {
+    static int16_t PageActuPrev = -1;
+    if (PageActu != PageActuPrev) {
+      LastPageChangeMillis = millis();
+      PageActuPrev = PageActu;
+    }
+  }
+
   if ((millis() - LastClickMillis) > 20)
   {
     LastClickMillis = millis();
@@ -121,8 +141,13 @@ void loopEcran()
 
     if (getTouchPoint(touchX, touchY, DeltaTouchX, DeltaTouchY))
     {
-
-      if (PageActu < PageTotalTournante && !SetupEnCours)
+      // Suppress all touch input for PAGE_CHANGE_DEBOUNCE_MS after any page
+      // transition — lets the user lift their finger before the new page reacts.
+      if ((millis() - LastPageChangeMillis) < PAGE_CHANGE_DEBOUNCE_MS)
+      {
+        /* touch suppressed — page just changed */
+      }
+      else if (PageActu < PageTotalTournante && !SetupEnCours)
       //===============
       { // Touché  Pages tournantes
         //=================

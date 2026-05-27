@@ -13,7 +13,7 @@
 | Category | Details |
 |----------|---------|
 | **Data sources** | FreeStyle Libre (LibreLinkUp API), Dexcom Share, NightScout REST API |
-| **Display** | Real-time glucose value, trend arrow, age indicator, 8-hour bar chart; tap glucose value to switch to full-screen large gauge view |
+| **Display** | Real-time glucose value, trend arrow, age indicator, 8-hour bar chart; tap the glucose value to cycle through three layouts: Normal (bar chart), large gauge (altView_01), and colour-coded full-screen (altView_02) |
 | **Units** | mg/dL or mmol/L (user-selectable) |
 | **Thresholds** | Configurable target range, warning levels, gauge scale |
 | **Languages** | English, Français, Deutsch, Español, Italiano, Polski |
@@ -100,6 +100,20 @@ Switch between sensors at any time in the **Account** screen. Glucose history is
 
 ---
 
+## 🖥️ Home Screen Layouts
+
+Tap the glucose value to cycle through three display layouts:
+
+| Layout | Description |
+|--------|-------------|
+| **Normal** | Semicircle gauge, 8-hour colour-coded bar chart, trend arrow, time, age indicator |
+| **altView_01** | Large semicircle gauge (1.5× radius) with needle, no bar chart — easier to read at a glance |
+| **altView_02** | Full-screen background colour reflects current glucose range (🔴 below target / 🟢 in range / 🟠 above target / 🟣 very high), large glucose value, no gauge or needle |
+
+A 400 ms touch-suppression window is applied after every layout or page transition, preventing ghost-taps on incoming buttons.
+
+---
+
 ## 🌐 Web Dashboard
 
 Open `http://<device-ip>/` from any browser on the same Wi-Fi network for a real-time glucose view.
@@ -156,7 +170,9 @@ src/
 ├── Heure.cpp             # NTP time sync, timezone, brightness control
 ├── Ecran/
 │   ├── Gestion.cpp       # Display driver init, touch, page routing
-│   ├── pageAccueil.cpp   # Home screen (gauge + 8-hour bar chart)
+│   ├── pageAccueil.cpp   # Home screen — three tap-selectable layouts: Normal (bar chart),
+│   │                     #   altView_01 (large semicircle gauge + needle),
+│   │                     #   altView_02 (colour-coded full-screen, no gauge)
 │   ├── pageCompte.cpp    # Sensor account configuration
 │   ├── pageClavier.cpp   # On-screen QWERTY/AZERTY keyboard
 │   └── page*.cpp         # Other configuration screens

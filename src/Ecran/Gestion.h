@@ -101,3 +101,4 @@ bool RadioBouton_Appui(RadioBouton &rb, int16_t x, int16_t y);
 void RadioBouton_Trace(RadioBouton &rb, uint16_t colorCentre = C_grisFonce);
 
 void AlertePasdeGlycemie();
+void SuppressTouch(); // Start the touch-suppression debounce timer (use after any in-page layout change)
