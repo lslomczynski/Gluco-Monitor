@@ -7,7 +7,8 @@
 
 static bool flipCouleurs = false;
 static float dtReponse = 0.0;
-static bool altView = false; // false = normal view with bar chart, true = large gauge view
+// View mode: 0=Normal (bar chart), 1=altView_01 (large gauge), 2=altView_02 (coloured bg, no gauge/needle)
+static int8_t viewMode = 0;
 
 void Trace_Gauge(Arduino_Canvas *canva, int cx, int cy, int r_inner, int r_outer);
 
@@ -17,23 +18,18 @@ void AccueilInit()
 
 void AccueiLoop()
 {
-    CanvaAccueil->fillScreen(RGB565_BLACK);
-    CanvaAccueil->setTextColor(RGB565_WHITE);
     int16_t W2 = EcranW / 2;
 
-    // Layout parameters — altView: larger gauge, no bar chart
-    // Normal:  C=160, R0≈91,  R1=140, valY=185
-    // Alt:     C=265, R0=137, R1=210  (×1.5 both radii)
-    //   valY = EcranH-30 = 290  → glucose baseline 30 px from screen bottom
-    //   Arc top = C−R1 = 265−210 = 55 → 20 px below clock at y=35  ✓
-    //   All y > C=265 is below the semicircle → zero arc overlap with text/unit
-    //   Glucose: setTextSize(2) on inb63_mn → ~126 px effective height
-    //   Unit: helvB14 centred at (240, 300) → between glucose bottom and progress bar
-    int16_t C  = altView ? 245               : EcranH / 2;
-    int16_t R0 = altView ? 137               : (int)(EcranH / 3.5f);
-    int16_t R1 = altView ? 210               : EcranH / 2 - 20;
-    int16_t valY  = altView ? EcranH - 30    : C + 25;   // glucose text baseline
-    int16_t unitX = W2 + R0;                              // unit label left edge (normal view)
+    // Layout parameters
+    // Normal:    C=EcranH/2≈160, R0≈91,  R1=140,  valY=C+25≈185
+    // altView_01: C=245,          R0=137, R1=210,  valY=EcranH-30≈290; inb49_mn Sz=2 → 98 px
+    // altView_02: same geometry as altView_01; inb49_mn Sz=4 → ~196 px; coloured bg; no gauge/needle
+    bool isAltLayout = (viewMode > 0);
+    int16_t C     = isAltLayout ? 245            : EcranH / 2;
+    int16_t R0    = isAltLayout ? 137            : (int)(EcranH / 3.5f);
+    int16_t R1    = isAltLayout ? 210            : EcranH / 2 - 20;
+    int16_t valY  = isAltLayout ? EcranH - 30   : C + 25;   // glucose text baseline
+    int16_t unitX = W2 + R0;                                  // unit label left edge (Normal view)
 
     int16_t Teta0 = -180;
     uint16_t Couleurs[]     = {RGB565_RED, RGB565_GREEN, RGB565_ORANGE, RGB565_PURPLE};
@@ -43,7 +39,24 @@ void AccueiLoop()
     float rangeSpan = float(glucoseRangeMax - glucoseRangeMin);
     int idxCoul = 0;
 
-    Trace_Gauge(CanvaAccueil, W2, C, R0, R1);
+    // Background fill
+    // altView_02: coloured background reflects current glucose range
+    // altView_01 / Normal: black background
+    if (viewMode == 2 && GlycemieVal > 0) {
+        uint16_t bgColor;
+        if      (GlycemieVal < targetLow)          bgColor = RGB565_RED;
+        else if (GlycemieVal <= targetHigh)         bgColor = RGB565_GREEN;
+        else if (GlycemieVal <= glucoseWarn)        bgColor = RGB565_ORANGE;  // includes glucoseWarn
+        else                                         bgColor = RGB565_PURPLE;
+        CanvaAccueil->fillScreen(bgColor);
+    } else {
+        CanvaAccueil->fillScreen(RGB565_BLACK);
+    }
+    CanvaAccueil->setTextColor(RGB565_WHITE);
+
+    // Donut gauge — Normal and altView_01 only (not altView_02)
+    if (viewMode != 2)
+        Trace_Gauge(CanvaAccueil, W2, C, R0, R1);
 
     // HEURE
     CanvaAccueil->setFont(u8g2_font_fub35_tf);
@@ -65,8 +78,9 @@ void AccueiLoop()
     else
     {
         bool tooOld = AgeGlycemie / 60 > 20;
-        if (glucoseColor == GLUCOSE_COULEUR)
+        if (glucoseColor == GLUCOSE_COULEUR && viewMode != 2)
         {
+            // In altView_02 the background already conveys the range — keep glucose text white
             for (int c = 0; c < 4; c++)
                 if (GlycemieVal > seuilCoul[c])
                     idxCoul = c;
@@ -90,26 +104,24 @@ void AccueiLoop()
 
         CanvaAccueil->setTextColor(glucoseInfoColor);
         // Glucose value
-        // Normal:  inb63_mn, PrintCentre Sz=1 → 63 px
-        // Alt:     inb49_mn, PrintCentre Sz=2 → 49*2=98 px (fits in 210 radius with room for unit label below)
-        // NOTE: PrintCentre internally calls setTextSize(Sz) — must pass Sz here, not before.
-        if (altView) {
-            CanvaAccueil->setFont(u8g2_font_inb49_mn);
-            PrintCentre(CanvaAccueil, formatGlucoseValue(GlycemieVal), W2, valY, 2);
-        } else {
+        // Normal:    inb63_mn Sz=1 → 63 px
+        // altView_01: inb49_mn Sz=2 → 98 px
+        // altView_02: inb49_mn Sz=4 → ~196 px
+        if (viewMode == 0) {
             CanvaAccueil->setFont(u8g2_font_inb63_mn);
             PrintCentre(CanvaAccueil, formatGlucoseValue(GlycemieVal), W2, valY, 1);
+        } else {
+            CanvaAccueil->setFont(u8g2_font_inb49_mn);
+            PrintCentre(CanvaAccueil, formatGlucoseValue(GlycemieVal), W2, valY, viewMode == 2 ? 4 : 2);
         }
         CanvaAccueil->setTextSize(1);  // always restore after glucose print
 
         // Unit label
-        // Normal: left-aligned at W2+R0, y = valY-5  (10x20 font)
-        // Alt:    centred at x = W2 + (R0+R1)/2 = mid of right arc ring width
-        //         y = valY → bottom edge of unit = bottom edge of glucose value
-        //         font helvB14 (14 px),  size 1
-        if (altView) {
+        // Normal:    left-aligned at W2+R0, y=valY-5 (10x20 font)
+        // altView_01/02: centred at mid of right arc ring width, y=valY-20 (helvB14 font)
+        if (viewMode > 0) {
             CanvaAccueil->setFont(u8g2_font_helvB14_tf);
-            int16_t unitCX = W2 + (R0 + R1) / 2;   // = 240 + (137+210)/2 = 413
+            int16_t unitCX = W2 + (R0 + R1) / 2;
             PrintCentre(CanvaAccueil, getGlucoseUnitLabel(), unitCX, valY - 20, 1);
         } else {
             CanvaAccueil->setFont(u8g2_font_10x20_tf);
@@ -120,17 +132,21 @@ void AccueiLoop()
 
         // Needle angle — maps GlycemieVal onto the arc (same scale as Trace_Gauge)
         Teta0 = -180 + (int)(180.0f * (constrain((int)GlycemieVal, glucoseRangeMin, glucoseRangeMax) - glucoseRangeMin) / rangeSpan);
-        if (Teta0 > 0)   Teta0 = 0;
+        if (Teta0 > 0)    Teta0 = 0;
         if (Teta0 < -180) Teta0 = -180;
-        float Trad = float(Teta0) * 3.14f / 180.0f;
-        int16_t R0n = (int16_t)(0.8f * R0); // needle base radius — separate from gauge ring radius
-        CanvaAccueil->fillTriangle(
-            W2 + R1  * cos(Trad), C + R1  * sin(Trad),
-            W2 + R0n * cos(Trad - 0.2f), C + R0n * sin(Trad - 0.2f),
-            W2 + R0n * cos(Trad + 0.2f), C + R0n * sin(Trad + 0.2f),
-            glucoseInfoColor);
 
-        // Flèche tendance — fixed screen position (unchanged in both views)
+        // Needle — Normal and altView_01 only (not altView_02)
+        if (viewMode != 2) {
+            float Trad = float(Teta0) * 3.14f / 180.0f;
+            int16_t R0n = (int16_t)(0.8f * R0); // needle base radius — separate from gauge ring radius
+            CanvaAccueil->fillTriangle(
+                W2 + R1  * cos(Trad), C + R1  * sin(Trad),
+                W2 + R0n * cos(Trad - 0.2f), C + R0n * sin(Trad - 0.2f),
+                W2 + R0n * cos(Trad + 0.2f), C + R0n * sin(Trad + 0.2f),
+                glucoseInfoColor);
+        }
+
+        // Flèche tendance — fixed screen position (unchanged in all views)
         int16_t X0 = EcranW / 6;
         int16_t Y0 = EcranH / 6;
         int16_t x0, y0, x1, y1, x2, y2, x3, y3, x4, y4;
@@ -221,7 +237,7 @@ void AccueiLoop()
     CanvaAccueil->fillRect(0, EcranH - 10, int(dtReponse), 10, RGB565_MAGENTA);
 
     // Graphe en barres — affiché uniquement en vue normale
-    if (!altView && pointCountGly > 1)
+    if (viewMode == 0 && pointCountGly > 1)
     {
         int16_t X0 = 30;
         int16_t Y0 = EcranH / 1.9;
@@ -282,23 +298,24 @@ void AccueiLoop()
     }
 }
 
-// ==========================
-// TOUCH — bascule vue alt
-// ==========================
+// =====================================================
+// TOUCH — cycle: Normal → altView_01 → altView_02 → Normal
+// =====================================================
 void AccueilHandleTouch(uint16_t x, uint16_t y)
 {
     if (GlycemieVal <= 0)
-        return; // pas de valeur, rien à basculer
+        return; // no reading — nothing to toggle
 
-    // Zone de touché sur la valeur glycémique
-    // Normal:  inb63 Sz=1 → 63 px,  baseline y=185,  top ≈ 122
-    // Alt:     inb49 Sz=3 → ~147 px, baseline y=290, top ≈ valY-147-5 = 138
+    // Hit zone over the glucose value
+    // Normal:    inb63 Sz=1 → 63 px,  baseline y=185, top≈122
+    // altView_01: inb49 Sz=2 → 98 px,  baseline y=290, top≈192
+    // altView_02: inb49 Sz=4 → 196 px, baseline y=290, top≈94  (same hit zone as altView_01 for simplicity)
     uint16_t hitX1 = 100, hitX2 = 380;
-    uint16_t hitY1 = altView ? 187 : 110;
-    uint16_t hitY2 = altView ? 295 : 200;
+    uint16_t hitY1 = (viewMode == 0) ? 110 : 187;
+    uint16_t hitY2 = (viewMode == 0) ? 200 : 295;
 
     if (x >= hitX1 && x <= hitX2 && y >= hitY1 && y <= hitY2)
-        altView = !altView;
+        viewMode = (viewMode + 1) % 3;  // 0 → 1 → 2 → 0
 }
 
 void Trace_Gauge(Arduino_Canvas *canva, int cx, int cy, int r_inner, int r_outer)
