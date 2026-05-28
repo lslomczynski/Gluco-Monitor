@@ -73,11 +73,13 @@ String RS = String((char)30); // Record Separator
 String US = String((char)31); // Unit Separator
 
 int16_t LuminositeNuit=255; //Maximum
+int8_t viewMode = 0;
 
 bool SetupEnCours=true;
 
 //======= Page HTML Brute ============
 bool AutorisationPageBrute=false;
+bool needsConfigRedraw=false;
 unsigned long TimerAutorisationBruteMillis=0;
 
 // PSRAM

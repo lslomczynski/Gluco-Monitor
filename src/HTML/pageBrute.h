@@ -110,6 +110,7 @@ const char *BruteHtml = R"====(
         <div class="Menudroite">
             <div class="MiniMenu">
                 <div><a href="/" data-i18n="Glucose">-Glyc-</a></div>
+                <div><a href="/Settings">Settings</a></div>
                 <div class="MenuChoisi"><a href="/Brute" data-i18n="dataLibreview" id="menuBrute">-Libreview-</a></div>
                 <div><a href="/OTA" data-i18n="Update">-M à jour-</a></div>
                 <div><a href="/Restart" data-i18n="Restart">-Restart-</a></div>

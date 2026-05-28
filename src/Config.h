@@ -77,6 +77,8 @@ extern GlucoseColor glucoseColor;
 extern String ES, FS, GS, RS, US;
 
 extern int16_t LuminositeNuit;
+// Home screen layout: 0=Default (gauge+bar chart), 1=Gauge only (altView_01), 2=Value only (altView_02)
+extern int8_t viewMode;
 
 extern bool SetupEnCours;
 
@@ -87,6 +89,9 @@ extern unsigned long TimerAutorisationBruteMillis;
 // PSRAM
 extern EXT_RAM_BSS_ATTR char MessageEcran[];
 extern EXT_RAM_BSS_ATTR String LoginJSON, GraphJSON, ConnectionJSON;
+
+// Set to true to trigger a redraw of the on-screen config menu (e.g. after language change)
+extern bool needsConfigRedraw;
 
 // Clear all data (glucose, Dexcom cache, LibreView cache) when switching accounts
 void clearData();

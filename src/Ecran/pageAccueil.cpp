@@ -7,8 +7,6 @@
 
 static bool flipCouleurs = false;
 static float dtReponse = 0.0;
-// View mode: 0=Normal (bar chart), 1=altView_01 (large gauge), 2=altView_02 (coloured bg, no gauge/needle)
-static int8_t viewMode = 0;
 
 void Trace_Gauge(Arduino_Canvas *canva, int cx, int cy, int r_inner, int r_outer);
 

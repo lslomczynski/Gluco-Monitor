@@ -12,6 +12,7 @@
 
 #include "HTML/pageMain.h"
 #include "HTML/pageBrute.h"
+#include "HTML/pageSettings.h"
 #include "HTML/pageAutorisationBrute.h"
 #include "HTML/pageOTA.h"
 #include "HTML/pageSetupAP.h"
@@ -20,6 +21,7 @@
 #include "HTML/JS_Main.js.h"
 #include "Ecran/pageAutBrute.h"
 #include "Langues/Langue.h"
+#include "Heure.h"
 #include "Langues/en.h"
 #include "Langues/fr.h"
 #include "Langues/de.h"
@@ -72,6 +74,112 @@ void Init_Server()
                       request->send(200, "text/html", AutBruteHtml);
                   }
                   TimerAutorisationBruteMillis = millis(); });
+  // Settings page — gated the same way as /Brute and /OTA
+  server.on("/Settings", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+                TimerAutorisationBruteMillis = millis();
+                if (!AutorisationPageBrute) {
+                    PageActu = pageAutBrute;
+                    request->send(200, "text/html", AutBruteHtml);
+                    return;
+                }
+                request->send(200, "text/html", SettingsHtml); });
+
+  // Return current settings as JSON (no passwords)
+  server.on("/ajaxSettings", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+                if (!AutorisationPageBrute) {
+                    request->send(403, "text/plain", "Unauthorized");
+                    return;
+                }
+                JsonDocument doc;
+                doc["sensorType"]      = (int)sensorType;
+                doc["libreEmail"]      = libreEmail;
+                doc["libreZone"]       = libreZone;
+                doc["dexcomUsername"]  = dexcomUsername;
+                doc["dexcomRegion"]    = dexcomRegion;
+                doc["nightscoutUrl"]   = nightscoutUrl;
+                doc["glucoseUnit"]     = (int)glucoseUnit;
+                doc["glucoseColor"]    = (int)glucoseColor;
+                doc["LuminositeNuit"]  = LuminositeNuit;
+                doc["LaLangue"]        = LaLangue;
+                doc["idxFuseau"]       = idxFuseau;
+                doc["rotation"]        = rotation;
+                doc["glucoseRangeMin"] = glucoseRangeMin;
+                doc["targetLow"]       = targetLow;
+                doc["targetHigh"]      = targetHigh;
+                doc["glucoseWarn"]     = glucoseWarn;
+                doc["glucoseRangeMax"] = glucoseRangeMax;
+                doc["viewMode"]        = viewMode;
+                String json;
+                serializeJson(doc, json);
+                request->send(200, "application/json", json); });
+
+  // Save settings from /Settings page
+  server.on("/saveSettings", HTTP_POST, [](AsyncWebServerRequest *request)
+            {
+                if (!AutorisationPageBrute) {
+                    request->send(403, "application/json", "{\"ok\":false}");
+                    return;
+                }
+                bool restartNeeded = false;
+                // Sensor type
+                if (request->hasParam("sensorType", true)) {
+                    SensorType newType = (SensorType)request->getParam("sensorType", true)->value().toInt();
+                    if (newType != sensorType) {
+                        sensorType = newType;
+                        clearData();
+                    }
+                }
+                // LibreLinkUp credentials
+                if (request->hasParam("libreEmail",  true)) { libreEmail = request->getParam("libreEmail",  true)->value(); libreEmail.trim(); }
+                if (request->hasParam("librePass",   true)) librePass  = request->getParam("librePass",   true)->value();
+                if (request->hasParam("libreZone",   true)) libreZone  = request->getParam("libreZone",   true)->value();
+                // Dexcom credentials
+                if (request->hasParam("dexcomUsername", true)) { dexcomUsername = request->getParam("dexcomUsername", true)->value(); dexcomUsername.trim(); }
+                if (request->hasParam("dexcomPass",     true)) dexcomPassword = request->getParam("dexcomPass",     true)->value();
+                if (request->hasParam("dexcomRegion",   true)) dexcomRegion   = request->getParam("dexcomRegion",   true)->value();
+                // NightScout credentials
+                if (request->hasParam("nightscoutUrl",   true)) { nightscoutUrl = request->getParam("nightscoutUrl", true)->value(); nightscoutUrl.trim(); }
+                if (request->hasParam("nightscoutToken", true)) nightscoutToken = request->getParam("nightscoutToken", true)->value();
+                // Display settings
+                if (request->hasParam("glucoseUnit",  true)) glucoseUnit  = (GlucoseUnit)request->getParam("glucoseUnit",  true)->value().toInt();
+                if (request->hasParam("glucoseColor", true)) glucoseColor = (GlucoseColor)request->getParam("glucoseColor", true)->value().toInt();
+                if (request->hasParam("LuminositeNuit", true)) {
+                    LuminositeNuit = request->getParam("LuminositeNuit", true)->value().toInt();
+                    ledcWrite(GFX_BL, LuminositeNuit);
+                }
+                if (request->hasParam("LaLangue", true)) {
+                    int8_t newLang = (int8_t)request->getParam("LaLangue", true)->value().toInt();
+                    if (newLang != LaLangue) { LaLangue = newLang; needsConfigRedraw = true; }
+                }
+                if (request->hasParam("rotation",  true)) {
+                    int8_t newRot = (int8_t)request->getParam("rotation", true)->value().toInt();
+                    if (newRot != rotation) { rotation = newRot; restartNeeded = true; }
+                }
+                if (request->hasParam("viewMode", true))
+                    viewMode = (int8_t)request->getParam("viewMode", true)->value().toInt();
+                // Timezone — reconfigure NTP immediately
+                if (request->hasParam("idxFuseau", true)) {
+                    int8_t newTZ = (int8_t)request->getParam("idxFuseau", true)->value().toInt();
+                    if (newTZ != idxFuseau) {
+                        idxFuseau = newTZ;
+                        DefFuseauHoraire();
+                    }
+                }
+                // Glucose thresholds — take effect on next display refresh
+                if (request->hasParam("glucoseRangeMin", true)) glucoseRangeMin = request->getParam("glucoseRangeMin", true)->value().toInt();
+                if (request->hasParam("targetLow",       true)) targetLow       = request->getParam("targetLow",       true)->value().toInt();
+                if (request->hasParam("targetHigh",      true)) targetHigh      = request->getParam("targetHigh",      true)->value().toInt();
+                if (request->hasParam("glucoseWarn",     true)) glucoseWarn     = request->getParam("glucoseWarn",     true)->value().toInt();
+                if (request->hasParam("glucoseRangeMax", true)) glucoseRangeMax = request->getParam("glucoseRangeMax", true)->value().toInt();
+
+                RecordFichierParametres();
+                String resp = restartNeeded
+                    ? "{\"ok\":true,\"restart\":true}"
+                    : "{\"ok\":true,\"restart\":false}";
+                request->send(200, "application/json", resp); });
+
   server.on("/OTA", HTTP_GET, [](AsyncWebServerRequest *request)
             { 
                 if (AutorisationPageBrute)

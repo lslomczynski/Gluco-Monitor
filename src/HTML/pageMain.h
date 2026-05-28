@@ -132,7 +132,7 @@ const char *MainHtml = R"====(
 
         </div>
         <div class="w25p">
-            <div class="MiniMenu"><a href="/Brute">...</a></div>
+            <div class="MiniMenu"><a href="/Settings">...</a></div>
             <h1>Gluco-Monitor</h1>
             <div id="lAge"><span style="color:grey" data-i18n="AgeGlyc">-Age-</span></div>
         </div>

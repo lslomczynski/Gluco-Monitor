@@ -179,6 +179,11 @@ void loop()
   }
   loopEcran();
 
+  if (needsConfigRedraw) {
+    needsConfigRedraw = false;
+    ParaInit();
+  }
+
   //== Tests si fonctionnement nominal ============
   if (millis() - lastGlycOkMillis > 1210000) // Si on n'a pas réussi à récupérer une glycémie depuis plus de 20 minutes, on redémarre le module pour tenter de résoudre les problèmes de communication
     AlertePasdeGlycemie();
