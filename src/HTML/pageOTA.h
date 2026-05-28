@@ -1,223 +1,132 @@
-const char* OTAupdateHtml = R"rawliteral(
+// OTA firmware update page — dark theme
+const char* OTAupdateHtml = R"====(
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>OTA Update</title>
-  <script src="/JS_Commun"></script>
-  <script src="/JS_Traduction"></script>
-  <style>
-    body {
-      font-family: Arial;
-      padding: 0 1rem;
-    }
-
-    a {
-      color: black;
-      text-decoration: none;
-    }
-
-    a:hover {
-      color: blue;
-    }
-
-    h1 {
-      font-size: 1.4rem;
-      margin-bottom: 1.5rem;
-    }
-
-    input[type=file] {
-      display: block;
-      margin-bottom: 1rem;
-    }
-
-    button {
-      padding: .6rem 1.4rem;
-      background: #333;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    #status {
-      margin-top: 1rem;
-      font-size: .9rem;
-      color: #555;
-    }
-
-    progress {
-      width: 100%;
-      margin-top: .8rem;
-      display: none;
-    }
-
-    .top {
-      width: 100%;
-      display: flex;
-    }
-
-    .MiniMenu {
-      display: flex;
-      justify-content: space-around;
-      margin: 10px;
-      border: solid 4px lightblue;
-      border-radius: 10px;
-      padding: 4px;
-      background-color: #d2dbe0;
-      font-weight: bold;
-    }
-
-    .MiniMenu div {
-      padding-top: 10px;
-    }
-
-    .Menudroite {
-      text-align: right;
-      width: 50%;
-    }
-
-    .Menugauche {
-      text-align: left;
-      display: inline-flex;
-      width: 50%;
-    }
-
-    .MenuChoisi {
-      border-radius: 6px;
-      margin: 2px;
-      border: inset 2px grey;
-      background-color: lightgrey;
-      padding: 2px;
-    }
-
-    .centre {
-      text-align: center;
-      margin: auto;
-    }
-
-    .liste {
-      display: flex;
-      justify-content: center;
-      text-align: left;
-    }
-
-    .infoOTA {
-      font-style: italic;
-      font-size: smaller;
-    }
-    .bouton{
-      margin:auto;
-      margin-bottom: 10px;
-    }
-    .LeBas{
-      display:flex;
-      justify-content: space-between;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Update — Gluco-Monitor</title>
+<script src="/JS_Commun"></script>
+<script src="/JS_Traduction"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;color:#eee;font-family:Arial,sans-serif;max-width:700px;margin:auto;font-size:112%}
+.top{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid #333;gap:12px;flex-wrap:wrap}
+.top img{height:32px;width:32px;flex-shrink:0}
+.top h1{font-size:1.1em;color:#eee;flex:1;min-width:80px}
+.MiniMenu{display:flex;gap:5px;flex-wrap:wrap}
+.MiniMenu a{padding:5px 9px;border-radius:6px;color:#aaa;text-decoration:none;font-size:.82em;background:#1a1a1a;border:1px solid #333}
+.MiniMenu a:hover{color:#fff;border-color:#555}
+.MiniMenu a.active{background:#1a2a4a;color:#8af;border-color:#446;font-weight:bold}
+.MiniMenu a.warn{color:#f90;border-color:#630}
+.MiniMenu a.warn:hover{color:#fb4;border-color:#850}
+.MiniMenu a.danger{color:#f88;border-color:#522}
+.MiniMenu a.danger:hover{color:#fcc;border-color:#744}
+main{padding:14px}
+.section{background:#1a1a2a;border-radius:8px;padding:14px;margin-bottom:14px}
+.section h2{color:#8af;font-size:.95em;margin-bottom:10px;border-bottom:1px solid #2a2a4a;padding-bottom:6px}
+.ver{text-align:center;color:#444;font-size:.78em;margin-top:10px;padding-bottom:16px}
+.ver-line{color:#bbb;font-size:.9em;margin-bottom:8px}
+.ota-steps{list-style:none;padding:0;color:#ccc;font-size:.9em;line-height:1.9;margin-bottom:8px}
+iframe.ver-list{width:100%;height:150px;border:1px solid #333;border-radius:6px;
+  background:#fff;display:block;margin-bottom:12px}
+input[type=file]{display:block;margin:12px 0;color:#ccc;font-size:.9em}
+.btn-upload{padding:10px 24px;background:#0a5;color:#fff;border:none;border-radius:8px;
+  font-size:1em;font-weight:bold;cursor:pointer}
+.btn-upload:active{background:#083}
+progress{width:100%;margin-top:10px;display:none;accent-color:#4af}
+#status{margin-top:10px;font-size:.9em;color:#8af;min-height:1.2em}
+.ext-link{color:#8af;font-size:.85em}
+.ext-link a{color:#8af}
+</style>
 </head>
-
 <body onload="init();">
-  <div class="top">
-    <div class="Menugauche"><img src="/favicon.ico" />
-      <h1>Gluco-Monitor</h1>
-    </div>
-    <div class="Menudroite">
-      <div class="MiniMenu">
-        <div><a href="/" data-i18n="Glucose">-Glyc-</a></div>
-                <div><a href="/Brute" data-i18n="dataLibreview" id="menuBrute">-Libreview-</a></div>
-                <div class="MenuChoisi"><a href="/OTA" data-i18n="Update">-M à jour-</a></div>
-                <div><a href="/Restart" data-i18n="Restart">-Restart-</a></div>
-      </div>
-    </div>
+<div class="top">
+  <img src="/favicon.ico" alt="">
+  <h1>Gluco-Monitor</h1>
+  <nav class="MiniMenu">
+    <a href="/" data-i18n="Glucose">Glucose</a>
+    <a href="/Settings">Settings</a>
+    <a href="/Brute" id="menuBrute">Data</a>
+    <a href="/OTA" class="active" data-i18n="Update">Update</a>
+    <a href="/Restart" class="warn" data-i18n="Restart">Restart</a>
+    <a href="/eraseConfig" class="danger">Erase</a>
+  </nav>
+</div>
+
+<main>
+  <div class="section">
+    <h2 data-i18n="UpdateOTA">OTA Update</h2>
+    <p class="ver-line"><span data-i18n="VersionNow">Current version:</span> <span id="version"></span></p>
+    <p class="ver-line" data-i18n="VersionDispo">Available versions:</p>
+    <iframe class="ver-list" src="https://f1atb.fr/web_tool_GlucoMonit/scan_dir_bin.php"></iframe>
+    <ul class="ota-steps">
+      <li data-i18n="Telecharge">1 - Download the desired version to your computer</li>
+      <li data-i18n="SelectFile">2 - Select the file</li>
+      <li><span data-i18n="SendBin">3 - Click </span>'<span data-i18n="SendBinBut">Send binary</span>'</li>
+    </ul>
   </div>
-  <div class="centre">
-    <h1 data-i18n="UpdateOTA">-M Jour OTA-</h1>
-    <div class="infoOTA">OTA = On The Air</div>
-    <br>
-    <div class="liste">
-      <span data-i18n="VersionNow">Votre version actuelle de Gluco-Monitor : </span><span id="Version_actu"></span>
-    </div>
-    <br>
-    <div class="liste" data-i18n="VersionDispo">
-      -Version dispo-
-    </div>
-    <div class="liste">
-      <iframe src="https://f1atb.fr/web_tool_GlucoMonit/scan_dir_bin.php" style="width:350px; height:150px"></iframe>
-    </div>
-    <div class="liste">
-      <ul>
-        <li data-i18n="Telecharge">1 - Téléchargez sur votre ordinateur, la version binaire du logiciel du Gluco-Monitor souhaitée
-          <br>(Gluco-Monitor_x.x.x.bin) <span data-i18n="ClickBin"> -cliquant dessus-</span></li>
-        <li data-i18n="SelectFile">--SelectFile--</li>
-        <li ><span data-i18n="SendBin">3 - Cliquez sur </span>'<span data-i18n="SendBinBut">---</span>'</li>
-      </ul>
-    </div>
+
+  <div class="section">
+    <h2>Upload Firmware</h2>
     <form id="form">
-      <input class="bouton" type="file" id="bin" accept=".bin" required>
-      
-      <button type="submit" id="boutonSubmit" data-i18n="SendBinBut">Submit</button>
+      <input type="file" id="bin" accept=".bin" required>
+      <button class="btn-upload" type="submit" id="boutonSubmit" data-i18n="SendBinBut">Upload</button>
     </form>
     <progress id="prog" max="100" value="0"></progress>
     <p id="status"></p>
   </div>
-  <div class="LeBas">
-    <div>Version : <span id="version"></span></div>
-    <div><a href="https://f1atb.fr">https://F1ATB.fr</a></div>
-  </div>
-  <script>
-    document.getElementById('form').onsubmit = async e => {
-      e.preventDefault();
-      const file = document.getElementById('bin').files[0];
-      if (!file) return;
 
-      const prog = document.getElementById('prog');
-      const status = document.getElementById('status');
-      prog.style.display = 'block';
-      status.textContent = 'Upload in progress…';
+  <div class="ver">Version: <span id="version2"></span></div>
+</main>
 
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/update');
-
-      xhr.upload.onprogress = ev => {
-        if (ev.lengthComputable) {
-          prog.value = Math.round(ev.loaded / ev.total * 100);
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          status.textContent = 'Success! The ESP32 is restarting…';
-        } else {
-          status.textContent = 'Error : ' + xhr.responseText;
-        }
-      };
-
-      const fd = new FormData();
-      fd.append('firmware', file, file.name);
-      xhr.send(fd);
-    };
-    function init(){
-       // Fetch sensor type and update menu label
-       fetch('/ajaxGlycemie')
-           .then(response => response.json())
-           .then(data => {
-               const isDexcom = data.sensorType === 1; // 1 = SENSOR_DEXCOM
-               if (isDexcom) {
-                   document.getElementById('menuBrute').setAttribute('data-i18n', 'dataDexcom');
-               }
-               SetTraduction();
-           })
-           .catch(error => {
-               console.error('Error fetching sensor type:', error);
-               SetTraduction();
-           });
-       GH("Version_actu",Version);
-       GH("version",Version);
+<script>
+document.getElementById('form').onsubmit = function(e) {
+  e.preventDefault();
+  var file = document.getElementById('bin').files[0];
+  if (!file) return;
+  var prog = document.getElementById('prog');
+  var status = document.getElementById('status');
+  prog.style.display = 'block';
+  status.textContent = 'Upload in progress...';
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/update');
+  xhr.upload.onprogress = function(ev) {
+    if (ev.lengthComputable) {
+      prog.value = Math.round(ev.loaded / ev.total * 100);
     }
-  </script>
-</body>
+  };
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      status.textContent = 'Success! The ESP32 is restarting...';
+    } else {
+      status.textContent = 'Error: ' + xhr.responseText;
+    }
+  };
+  var fd = new FormData();
+  fd.append('firmware', file, file.name);
+  xhr.send(fd);
+};
 
+function init() {
+  GH('version', Version);
+  GH('version2', Version);
+  // Fetch sensor type to set correct label on the Data nav link
+  fetch('/ajaxGlycemie')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.sensorType === 1) {
+        document.getElementById('menuBrute').setAttribute('data-i18n', 'dataDexcom');
+      } else {
+        document.getElementById('menuBrute').setAttribute('data-i18n', 'dataLibreview');
+      }
+      SetTraduction();
+    })
+    .catch(function() {
+      SetTraduction();
+    });
+}
+</script>
+</body>
 </html>
-)rawliteral";
+)====";

@@ -17,6 +17,9 @@
 #include "HTML/pageOTA.h"
 #include "HTML/pageSetupAP.h"
 #include "Internet.h"
+#include "Libreview.h"
+#include "Dexcom.h"
+#include "NightScout.h"
 #include "HTML/JS_Commun.js.h"
 #include "HTML/JS_Main.js.h"
 #include "Ecran/pageAutBrute.h"
@@ -283,10 +286,78 @@ void Init_Server()
                         );
 
                     request->send(response); });
+  // Test sensor connection using form-provided credentials (blank password = keep saved)
+  server.on("/testConnection", HTTP_POST, [](AsyncWebServerRequest *request) {
+      if (!AutorisationPageBrute) {
+          request->send(403, "application/json", "{\"ok\":false,\"msg\":\"Unauthorized\"}");
+          return;
+      }
+      int testSensor = (int)sensorType;
+      if (request->hasParam("sensorType", true))
+          testSensor = request->getParam("sensorType", true)->value().toInt();
+
+      bool ok = false;
+      String msg;
+
+      if (testSensor == SENSOR_LIBRE) {
+          String savedEmail = libreEmail, savedPass = librePass, savedZone = libreZone;
+          if (request->hasParam("libreEmail", true)) {
+              String v = request->getParam("libreEmail", true)->value(); v.trim();
+              if (v.length() > 0) libreEmail = v;
+          }
+          if (request->hasParam("librePass", true)) {
+              String v = request->getParam("librePass", true)->value();
+              if (v.length() > 0) librePass = v;
+          }
+          if (request->hasParam("libreZone", true))
+              libreZone = request->getParam("libreZone", true)->value();
+          ok = loginLibreLinkUp();
+          msg = ok ? "LibreLinkUp login OK" : "LibreLinkUp login failed";
+          libreEmail = savedEmail; librePass = savedPass; libreZone = savedZone;
+
+      } else if (testSensor == SENSOR_DEXCOM) {
+          String savedUser = dexcomUsername, savedPass = dexcomPassword, savedRegion = dexcomRegion;
+          if (request->hasParam("dexcomUsername", true)) {
+              String v = request->getParam("dexcomUsername", true)->value(); v.trim();
+              if (v.length() > 0) dexcomUsername = v;
+          }
+          if (request->hasParam("dexcomPass", true)) {
+              String v = request->getParam("dexcomPass", true)->value();
+              if (v.length() > 0) dexcomPassword = v;
+          }
+          if (request->hasParam("dexcomRegion", true))
+              dexcomRegion = request->getParam("dexcomRegion", true)->value();
+          ok = loginDexcomShare();
+          msg = ok ? "Dexcom Share login OK" : "Dexcom Share login failed";
+          dexcomUsername = savedUser; dexcomPassword = savedPass; dexcomRegion = savedRegion;
+
+      } else {
+          String savedUrl = nightscoutUrl, savedToken = nightscoutToken;
+          if (request->hasParam("nightscoutUrl", true)) {
+              String v = request->getParam("nightscoutUrl", true)->value(); v.trim();
+              if (v.length() > 0) nightscoutUrl = v;
+          }
+          if (request->hasParam("nightscoutToken", true)) {
+              String v = request->getParam("nightscoutToken", true)->value();
+              if (v.length() > 0) nightscoutToken = v;
+          }
+          ok = testNightScoutConnection();
+          msg = ok ? "NightScout connection OK" : "NightScout connection failed";
+          nightscoutUrl = savedUrl; nightscoutToken = savedToken;
+      }
+
+      String json = String("{\"ok\":") + (ok ? "true" : "false") + ",\"msg\":\"" + msg + "\"}";
+      request->send(200, "application/json", json);
+  });
+
   server.on("/Restart", HTTP_GET, [](AsyncWebServerRequest *request)
             {
                 request->send(200, "text/html", RestartHtml);
-                scheduleRestart(2000); // Restart 2 s after response is sent
+            });
+  server.on("/Restart", HTTP_POST, [](AsyncWebServerRequest *request)
+            {
+                request->send(200, "text/html", RestartingHtml);
+                scheduleRestart(2000);
             });
   // GET /eraseConfig — show confirmation page (never erases directly)
   server.on("/eraseConfig", HTTP_GET, [](AsyncWebServerRequest *request)

@@ -9,7 +9,7 @@ const char *SettingsHtml = R"====(
 <script src="/JS_Commun"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#111;color:#eee;font-family:Arial,sans-serif;max-width:600px;margin:auto}
+body{background:#111;color:#eee;font-family:Arial,sans-serif;max-width:600px;margin:auto;font-size:112%}
 .top{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid #333;gap:12px;flex-wrap:wrap}
 .top img{height:32px;width:32px;flex-shrink:0}
 .top h1{font-size:1.1em;color:#eee;flex:1;min-width:80px}
@@ -17,6 +17,10 @@ body{background:#111;color:#eee;font-family:Arial,sans-serif;max-width:600px;mar
 .MiniMenu a{padding:5px 9px;border-radius:6px;color:#aaa;text-decoration:none;font-size:.82em;background:#1a1a1a;border:1px solid #333}
 .MiniMenu a:hover{color:#fff;border-color:#555}
 .MiniMenu a.active{background:#1a2a4a;color:#8af;border-color:#446;font-weight:bold}
+.MiniMenu a.warn{color:#f90;border-color:#630}
+.MiniMenu a.warn:hover{color:#fb4;border-color:#850}
+.MiniMenu a.danger{color:#f88;border-color:#522}
+.MiniMenu a.danger:hover{color:#fcc;border-color:#744}
 main{padding:14px}
 .section{background:#1a1a2a;border-radius:8px;padding:14px;margin-bottom:14px}
 .section h2{color:#8af;font-size:.95em;margin-bottom:12px;border-bottom:1px solid #2a2a4a;padding-bottom:6px}
@@ -43,6 +47,10 @@ input[type=number]{width:auto;text-align:center;min-width:80px}
 /* Glucose color bar */
 #gBar{width:100%;height:18px;border-radius:6px;margin-bottom:4px;display:block}
 
+.btn-test{padding:9px 20px;background:#1a2a4a;color:#8af;border:1px solid #446;
+  border-radius:6px;font-size:.9em;cursor:pointer}
+.btn-test:active{background:#2a3a5a}
+.test-sep{border-top:1px solid #2a2a4a;padding-top:12px;margin-top:14px}
 .hint{color:#666;font-size:.8em;margin-top:6px}
 .btn-row{display:flex;gap:10px;margin-top:16px}
 .btn-save{flex:2;padding:13px;background:#0a5;color:#fff;border:none;border-radius:8px;
@@ -68,7 +76,8 @@ input[type=number]{width:auto;text-align:center;min-width:80px}
     <a href="/Settings" class="active">Settings</a>
     <a href="/Brute" id="abrute">Data</a>
     <a href="/OTA">Update</a>
-    <a href="/Restart">Restart</a>
+    <a href="/Restart" class="warn">Restart</a>
+    <a href="/eraseConfig" class="danger">Erase</a>
   </nav>
 </div>
 
@@ -121,6 +130,10 @@ input[type=number]{width:auto;text-align:center;min-width:80px}
     <input type="text" id="nightscoutUrl" placeholder="https://your-ns.example.com" autocomplete="off">
     <label>Access token <span style="color:#555">(leave blank to keep current)</span></label>
     <input type="password" id="nightscoutToken" placeholder="(unchanged)" autocomplete="new-password">
+  </div>
+  <div class="test-sep">
+    <button class="btn-test" onclick="testConn()">Test Connection</button>
+    <div id="testResult" style="font-size:.85em;margin-top:8px;min-height:1.2em"></div>
   </div>
 </div>
 
@@ -407,6 +420,38 @@ function showStatus(msg,cls){
   var s=document.getElementById('status');
   s.className=cls; s.textContent=msg; s.style.display='block';
   s.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function testConn(){
+  var el=document.getElementById('testResult');
+  el.style.color='#aaa';
+  el.textContent='Testing... (may take up to 15 s)';
+  var st=document.querySelector('input[name="sensorType"]:checked');
+  var p=new URLSearchParams();
+  p.append('sensorType', st ? st.value : '0');
+  p.append('libreEmail', document.getElementById('libreEmail').value.trim());
+  var lp=document.getElementById('librePass').value;
+  if(lp) p.append('librePass', lp);
+  p.append('libreZone', document.getElementById('libreZone').value);
+  p.append('dexcomUsername', document.getElementById('dexcomUsername').value.trim());
+  var dp=document.getElementById('dexcomPass').value;
+  if(dp) p.append('dexcomPass', dp);
+  p.append('dexcomRegion', document.getElementById('dexcomRegion').value);
+  p.append('nightscoutUrl', document.getElementById('nightscoutUrl').value.trim());
+  var nt=document.getElementById('nightscoutToken').value;
+  if(nt) p.append('nightscoutToken', nt);
+  fetch('/testConnection', {method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:p.toString()})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      el.style.color = d.ok ? '#6f6' : '#f88';
+      el.textContent = d.msg || (d.ok ? 'OK' : 'Failed');
+    })
+    .catch(function(){
+      el.style.color='#f88';
+      el.textContent='Connection test failed (network error).';
+    });
 }
 
 window.onload=init;

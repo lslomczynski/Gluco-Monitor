@@ -152,21 +152,73 @@ const char *MainHtml = R"====(
 
 )====";
 
+// Confirmation page shown by GET /Restart (orange theme, no auto-restart)
 const char *RestartHtml = R"====(
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Restart</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Restart — Gluco-Monitor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;color:#eee;font-family:Arial,sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;text-align:center;padding:24px;box-sizing:border-box}
+h2{font-size:1.5em;color:#f90;margin-bottom:16px}
+p{color:#aaa;font-size:.95em;margin-bottom:16px;max-width:320px}
+.note{color:#8a8;font-size:.88em;margin-bottom:28px;max-width:320px}
+.btn-restart{padding:14px 32px;background:#f90;color:#111;border:none;
+  border-radius:8px;font-size:1.1em;font-weight:bold;cursor:pointer;
+  margin-bottom:12px;display:block;width:240px}
+.btn-restart:active{background:#c70}
+.btn-cancel{padding:10px 28px;background:#333;color:#ccc;border:1px solid #555;
+  border-radius:8px;font-size:1em;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-cancel:hover{background:#444;color:#eee}
+</style>
 </head>
-
 <body>
-    <h1>Restart</h1>
+<h2>&#x26A0; Restart Device</h2>
+<p>The device will reboot and reconnect to Wi&#8209;Fi.</p>
+<p class="note">&#x2714; All settings, credentials, and thresholds will be preserved.</p>
+<form method="POST" action="/Restart">
+  <button class="btn-restart" type="submit">&#x23FB; Restart</button>
+</form>
+<a class="btn-cancel" href="/">Cancel</a>
 </body>
-
 </html>
+)====";
 
+// Polling page sent after POST /Restart confirms the reboot
+const char *RestartingHtml = R"====(
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Restarting — Gluco-Monitor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;color:#eee;font-family:Arial,sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;text-align:center;padding:24px}
+h1{font-size:1.6em;color:#8af;margin-bottom:12px}
+p{color:#aaa;font-size:1em}
+</style>
+</head>
+<body>
+<h1>Restarting...</h1>
+<p>The device will be back in a few seconds.</p>
+<script>
+function poll(){
+  fetch('/').then(function(r){
+    if(r.ok){location.href='/';}else{setTimeout(poll,2000);}
+  }).catch(function(){setTimeout(poll,2000);});
+}
+setTimeout(poll,4000);
+</script>
+</body>
+</html>
 )====";
 
 // icône 64pixels
