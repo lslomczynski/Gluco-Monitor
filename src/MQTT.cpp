@@ -46,8 +46,9 @@ static int layoutFromName(const String& s) {
 void publishMqttState() {
     if (!mqttClient.connected()) return;
     String state = String("{\"screen\":\"") + (mqttScreenOff ? "OFF" : "ON") + "\""
-        + ",\"brightness\":"       + levelToPct(currentBrightness)
-        + ",\"brightness_night\":" + levelToPct(LuminositeNuit)
+        + ",\"brightness\":"              + levelToPct(currentBrightness)
+        + ",\"brightness_night\":"        + levelToPct(LuminositeNuit)
+        + ",\"night_schedule_disabled\":" + (nightScheduleDisabled ? "true" : "false")
         + ",\"layout\":\"" + layoutName() + "\"}";
     mqttClient.publish((baseTopic() + "/state").c_str(), state.c_str(), true);
 }
@@ -118,7 +119,13 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
     } else if (t.endsWith("/cmd/screen")) {
         if (msg == "ON") {
             mqttScreenOff = false;
-            int16_t val = (Int_Heure >= 7 && Int_Heure < 21) ? 255 : LuminositeNuit;
+            int nowMin   = Int_Heure * 60 + Int_Minute;
+            int startMin = nightStartHour * 60 + nightStartMin;
+            int endMin   = nightEndHour   * 60 + nightEndMin;
+            bool isNight = (startMin > endMin)
+                ? (nowMin >= startMin || nowMin < endMin)
+                : (nowMin >= startMin && nowMin < endMin);
+            int16_t val = (!nightScheduleDisabled && isNight) ? LuminositeNuit : 255;
             ledcWrite(GFX_BL, val);
             currentBrightness = val;
         } else {
@@ -126,6 +133,10 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
             ledcWrite(GFX_BL, 0);
             currentBrightness = 0;
         }
+        publishMqttState();
+    } else if (t.endsWith("/cmd/night_schedule")) {
+        nightScheduleDisabled = (msg == "OFF");
+        RecordFichierParametres();
         publishMqttState();
     } else if (t.endsWith("/cmd/layout")) {
         viewMode = layoutFromName(msg);
@@ -148,6 +159,7 @@ static bool mqttConnect() {
         mqttClient.subscribe((base + "/cmd/brightness_night").c_str());
         mqttClient.subscribe((base + "/cmd/screen").c_str());
         mqttClient.subscribe((base + "/cmd/layout").c_str());
+        mqttClient.subscribe((base + "/cmd/night_schedule").c_str());
         publishDiscovery();
         publishMqttState();
         Serial.println("MQTT connected: " + base);

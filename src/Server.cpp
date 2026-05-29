@@ -105,7 +105,12 @@ void Init_Server()
                 doc["nightscoutUrl"]   = nightscoutUrl;
                 doc["glucoseUnit"]     = (int)glucoseUnit;
                 doc["glucoseColor"]    = (int)glucoseColor;
-                doc["LuminositeNuit"]  = LuminositeNuit;
+                doc["LuminositeNuit"]        = LuminositeNuit;
+                doc["nightStartHour"]        = nightStartHour;
+                doc["nightStartMin"]         = nightStartMin;
+                doc["nightEndHour"]          = nightEndHour;
+                doc["nightEndMin"]           = nightEndMin;
+                doc["nightScheduleDisabled"] = nightScheduleDisabled;
                 doc["LaLangue"]        = LaLangue;
                 doc["idxFuseau"]       = idxFuseau;
                 doc["rotation"]        = rotation;
@@ -154,11 +159,22 @@ void Init_Server()
                 // Display settings
                 if (request->hasParam("glucoseUnit",  true)) glucoseUnit  = (GlucoseUnit)request->getParam("glucoseUnit",  true)->value().toInt();
                 if (request->hasParam("glucoseColor", true)) glucoseColor = (GlucoseColor)request->getParam("glucoseColor", true)->value().toInt();
-                if (request->hasParam("LuminositeNuit", true)) {
+                if (request->hasParam("LuminositeNuit", true))
                     LuminositeNuit = request->getParam("LuminositeNuit", true)->value().toInt();
-                    ledcWrite(GFX_BL, LuminositeNuit);
-                    currentBrightness = LuminositeNuit;
-                }
+                if (request->hasParam("nightStartHour", true))
+                    nightStartHour = (int8_t)request->getParam("nightStartHour", true)->value().toInt();
+                if (request->hasParam("nightStartMin", true))
+                    nightStartMin = (int8_t)request->getParam("nightStartMin", true)->value().toInt();
+                if (request->hasParam("nightEndHour", true))
+                    nightEndHour = (int8_t)request->getParam("nightEndHour", true)->value().toInt();
+                if (request->hasParam("nightEndMin", true))
+                    nightEndMin = (int8_t)request->getParam("nightEndMin", true)->value().toInt();
+                if (request->hasParam("nightScheduleDisabled", true))
+                    nightScheduleDisabled = request->getParam("nightScheduleDisabled", true)->value() == "1";
+                // Re-evaluate brightness: if schedule is active apply it now,
+                // if disabled leave current brightness unchanged.
+                if (!nightScheduleDisabled)
+                    FormatteHeureDate();
                 if (request->hasParam("LaLangue", true)) {
                     int8_t newLang = (int8_t)request->getParam("LaLangue", true)->value().toInt();
                     if (newLang != LaLangue) { LaLangue = newLang; needsConfigRedraw = true; }
@@ -522,6 +538,11 @@ void Init_Server()
                 if (request->hasParam("targetHigh",      true)) targetHigh    =            request->getParam("targetHigh",      true)->value().toInt();
                 if (request->hasParam("glucoseWarn",     true)) glucoseWarn   =            request->getParam("glucoseWarn",     true)->value().toInt();
                 if (request->hasParam("glucoseRangeMax", true)) glucoseRangeMax =           request->getParam("glucoseRangeMax", true)->value().toInt();
+                if (request->hasParam("LuminositeNuit",  true)) LuminositeNuit  =           request->getParam("LuminositeNuit",  true)->value().toInt();
+                if (request->hasParam("nightStartHour",  true)) nightStartHour  = (int8_t)  request->getParam("nightStartHour",  true)->value().toInt();
+                if (request->hasParam("nightStartMin",   true)) nightStartMin   = (int8_t)  request->getParam("nightStartMin",   true)->value().toInt();
+                if (request->hasParam("nightEndHour",    true)) nightEndHour    = (int8_t)  request->getParam("nightEndHour",    true)->value().toInt();
+                if (request->hasParam("nightEndMin",     true)) nightEndMin     = (int8_t)  request->getParam("nightEndMin",     true)->value().toInt();
                 RecordFichierParametres();
                 request->send(200, "text/plain", "OK");
                 scheduleRestart(500); // Non-blocking restart after response is sent

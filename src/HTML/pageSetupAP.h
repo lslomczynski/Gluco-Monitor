@@ -187,6 +187,29 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   <div id="gErr"></div>
 </div>
 
+<div class="section">
+  <h2>Night Screen Brightness</h2>
+  <label>Brightness level during night hours</label>
+  <div class="radio-row" style="margin-bottom:14px">
+    <label><input type="radio" name="LuminositeNuit" value="26"> 10%</label>
+    <label><input type="radio" name="LuminositeNuit" value="64"> 25%</label>
+    <label><input type="radio" name="LuminositeNuit" value="128" checked> 50%</label>
+    <label><input type="radio" name="LuminositeNuit" value="255"> 100%</label>
+  </div>
+  <label>Night mode starts at</label>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <input type="number" id="nightStartHour" min="0" max="23" value="21" style="width:64px;padding:9px;background:#222;color:#eee;border:1px solid #444;border-radius:6px;font-size:1em;text-align:center">
+    <span style="color:#eee;font-size:1.2em">:</span>
+    <input type="number" id="nightStartMin" min="0" max="59" value="0" style="width:64px;padding:9px;background:#222;color:#eee;border:1px solid #444;border-radius:6px;font-size:1em;text-align:center">
+  </div>
+  <label>Day mode starts at</label>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+    <input type="number" id="nightEndHour" min="0" max="23" value="7" style="width:64px;padding:9px;background:#222;color:#eee;border:1px solid #444;border-radius:6px;font-size:1em;text-align:center">
+    <span style="color:#eee;font-size:1.2em">:</span>
+    <input type="number" id="nightEndMin" min="0" max="59" value="0" style="width:64px;padding:9px;background:#222;color:#eee;border:1px solid #444;border-radius:6px;font-size:1em;text-align:center">
+  </div>
+</div>
+
 <button class="save-btn" onclick="doSave()">&#x1F4BE; Save &amp; Restart</button>
 <div id="msg"></div>
 
@@ -293,7 +316,12 @@ function doSave() {
     + '&targetLow='             + encodeURIComponent(document.getElementById('gLow').value)
     + '&targetHigh='            + encodeURIComponent(document.getElementById('gHigh').value)
     + '&glucoseWarn='           + encodeURIComponent(document.getElementById('gWarn').value)
-    + '&glucoseRangeMax='       + encodeURIComponent(document.getElementById('gMax').value);
+    + '&glucoseRangeMax='       + encodeURIComponent(document.getElementById('gMax').value)
+    + '&LuminositeNuit='        + encodeURIComponent((document.querySelector('input[name=LuminositeNuit]:checked')||{value:'128'}).value)
+    + '&nightStartHour='        + encodeURIComponent(document.getElementById('nightStartHour').value)
+    + '&nightStartMin='         + encodeURIComponent(document.getElementById('nightStartMin').value)
+    + '&nightEndHour='          + encodeURIComponent(document.getElementById('nightEndHour').value)
+    + '&nightEndMin='           + encodeURIComponent(document.getElementById('nightEndMin').value);
 
   var m = document.getElementById('msg');
   m.style.display = 'block'; m.style.background = '#224'; m.style.color = '#8af';

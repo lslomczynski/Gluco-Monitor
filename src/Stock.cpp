@@ -74,7 +74,12 @@ void DeserializeConfiguration(String json) {
   libreEmail = conf["libreEmail"].as<String>();
   librePass = conf["librePass"].as<String>();
   libreZone = conf["libreZone"].as<String>();
-  LuminositeNuit = conf["LuminositeNuit"] | LuminositeNuit;
+  LuminositeNuit        = conf["LuminositeNuit"]        | LuminositeNuit;
+  nightStartHour        = conf["nightStartHour"]        | nightStartHour;
+  nightStartMin         = conf["nightStartMin"]          | nightStartMin;
+  nightEndHour          = conf["nightEndHour"]           | nightEndHour;
+  nightEndMin           = conf["nightEndMin"]            | nightEndMin;
+  nightScheduleDisabled = conf["nightScheduleDisabled"]  | nightScheduleDisabled;
   LaLangue=conf["LaLangue"] | LaLangue;
   viewMode = conf["viewMode"] | viewMode;
   
@@ -124,7 +129,12 @@ String SerializeConfiguration() {
   conf["libreEmail"] = libreEmail;
   conf["librePass"] = librePass;
   conf["libreZone"] = libreZone;
-  conf["LuminositeNuit"] = LuminositeNuit;
+  conf["LuminositeNuit"]        = LuminositeNuit;
+  conf["nightStartHour"]        = nightStartHour;
+  conf["nightStartMin"]         = nightStartMin;
+  conf["nightEndHour"]          = nightEndHour;
+  conf["nightEndMin"]           = nightEndMin;
+  conf["nightScheduleDisabled"] = nightScheduleDisabled;
   conf["LaLangue"]=LaLangue;
   conf["viewMode"] = viewMode;
   

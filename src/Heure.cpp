@@ -121,8 +121,15 @@ void FormatteHeureDate()
   Int_Minute = timeinfo.tm_min;
   Jour = timeinfo.tm_wday; //-1=inconnu,0=dimanche,1=lundi...
   T_On_seconde = esp_timer_get_time() / 1000000; //Timer en microseconde sur 64 bits
-  if (!mqttScreenOff) {
-    int16_t newBrightness = (Int_Heure < 7 || Int_Heure >= 21) ? LuminositeNuit : 255;
+  if (!mqttScreenOff && !nightScheduleDisabled) {
+    int nowMin   = Int_Heure * 60 + Int_Minute;
+    int startMin = nightStartHour * 60 + nightStartMin;
+    int endMin   = nightEndHour   * 60 + nightEndMin;
+    // crosses midnight when start > end (typical: 21:00 → 07:00)
+    bool isNight = (startMin > endMin)
+        ? (nowMin >= startMin || nowMin < endMin)
+        : (nowMin >= startMin && nowMin < endMin);
+    int16_t newBrightness = isNight ? LuminositeNuit : 255;
     if (newBrightness != currentBrightness) {
       ledcWrite(GFX_BL, newBrightness);
       currentBrightness = newBrightness;

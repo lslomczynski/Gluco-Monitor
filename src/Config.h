@@ -85,6 +85,11 @@ extern GlucoseColor glucoseColor;
 extern String ES, FS, GS, RS, US;
 
 extern int16_t LuminositeNuit;
+extern int8_t nightStartHour;
+extern int8_t nightStartMin;
+extern int8_t nightEndHour;
+extern int8_t nightEndMin;
+extern bool   nightScheduleDisabled;
 extern int16_t currentBrightness;
 // Home screen layout: 0=Default (gauge+bar chart), 1=Gauge only (altView_01), 2=Value only (altView_02)
 extern int8_t viewMode;

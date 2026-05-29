@@ -81,6 +81,11 @@ String RS = String((char)30); // Record Separator
 String US = String((char)31); // Unit Separator
 
 int16_t LuminositeNuit=255; //Maximum
+int8_t nightStartHour = 21;
+int8_t nightStartMin  = 0;
+int8_t nightEndHour   = 7;
+int8_t nightEndMin    = 0;
+bool   nightScheduleDisabled = false;
 int16_t currentBrightness=255;
 int8_t viewMode = 0;
 

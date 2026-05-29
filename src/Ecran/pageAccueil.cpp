@@ -93,11 +93,19 @@ void AccueiLoop()
             uint16_t w, h;
             String text = T("WaitGluco");
             CanvaAccueil->getTextBounds(utf8ToLatin15(text), 0, 0, &x1, &y1, &w, &h);
+            // altView_02: centre between clock bottom and top of large glucose text
+            int16_t msgY;
+            if (viewMode == 2) {
+                int16_t glucoseTop = valY - 40 - 49 * 3;   // inb49 cap-height × scale 3
+                msgY = (EcranH / 9 + glucoseTop) / 2;
+            } else {
+                msgY = EcranH / 9;
+            }
             int16_t rectX = W2 - w / 2 - 2;
-            int16_t rectY = EcranH / 9 - h - 2;
+            int16_t rectY = msgY - h - 2;
             CanvaAccueil->fillRect(rectX, rectY, w + 4, h + 8, RGB565_BLACK);
             CanvaAccueil->setTextColor(RGB565_RED);
-            PrintCentre(CanvaAccueil, text, W2, EcranH / 9, 1);
+            PrintCentre(CanvaAccueil, text, W2, msgY, 1);
         }
 
         CanvaAccueil->setTextColor(glucoseInfoColor);

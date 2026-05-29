@@ -26,11 +26,17 @@ void pageAffichageSetup()
     CanvaBase->fillScreen(C_grisFonce);
     PrintCentre(CanvaBase, T("Display"), EcranW / 2, 30, 1);
     //============= Luminosité ==========================
-    CanvaBase->fillRoundRect(7, 50, EcranW - 14, 80, 8, RGB565_NAVY);
+    uint16_t lumBg = nightScheduleDisabled ? (uint16_t)0x4210 : (uint16_t)RGB565_NAVY;
+    CanvaBase->fillRoundRect(7, 50, EcranW - 14, 80, 8, lumBg);
     CanvaBase->drawRoundRect(7, 50, EcranW - 14, 80, 8, RGB565_WHITE);
     CanvaBase->setFont(u8g2_font_helvB14_tf);
     CanvaBase->setTextColor(RGB565_WHITE);
     PrintCentre(CanvaBase, T("Luminosite"), EcranW / 2, 70, 1);
+    if (nightScheduleDisabled) {
+        CanvaBase->setFont(u8g2_font_helvB14_tf);
+        CanvaBase->setTextColor(RGB565_WHITE);
+        PrintCentre(CanvaBase, "Disabled. Visit Web UI to enable.", EcranW / 2, 105, 1);
+    }
 
     //============= Rotation ==========================
     CanvaBase->fillRoundRect(7, 140, EcranW - 14, 80, 8, RGB565_NAVY);
@@ -56,10 +62,11 @@ void pageAffichageSetup()
 }
 
 void handleTouch_Affichage(uint16_t touchX, uint16_t touchY)
-{ 
+{
     int8_t oldRotation=rotation;
     for (int i = 0; i < 8; i++)
     {
+        if (i < 4 && nightScheduleDisabled) continue;
         if (RadioBouton_Appui(Rboutons[i], touchX, touchY))
         {
             switch (i)
@@ -109,16 +116,18 @@ void handleTouch_Affichage(uint16_t touchX, uint16_t touchY)
 void DrawBoutons()
 {
     int16_t Seuil[4] = {26, 64, 128, 255};
-    for (int i = 0; i < 4; i++)
-    {
-        Rboutons[i].X0 = EcranW * (i * 3 + 2) / 13-20;
-        if (LuminositeNuit == Seuil[i])
+    if (!nightScheduleDisabled) {
+        for (int i = 0; i < 4; i++)
         {
-            RadioBouton_Trace(Rboutons[i], RGB565_BLUE);
-        }
-        else
-        {
-            RadioBouton_Trace(Rboutons[i]);
+            Rboutons[i].X0 = EcranW * (i * 3 + 2) / 13-20;
+            if (LuminositeNuit == Seuil[i])
+            {
+                RadioBouton_Trace(Rboutons[i], RGB565_BLUE);
+            }
+            else
+            {
+                RadioBouton_Trace(Rboutons[i]);
+            }
         }
     }
     int16_t rot[2] = {1, 3};
