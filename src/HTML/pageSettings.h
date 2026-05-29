@@ -9,7 +9,7 @@ const char *SettingsHtml = R"====(
 <script src="/JS_Commun"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#111;color:#eee;font-family:Arial,sans-serif;max-width:600px;margin:auto;font-size:112%}
+body{background:#111;color:#eee;font-family:Arial,sans-serif;max-width:700px;margin:auto;font-size:112%}
 .top{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid #333;gap:12px;flex-wrap:wrap}
 .top img{height:32px;width:32px;flex-shrink:0}
 .top h1{font-size:1.1em;color:#eee;flex:1;min-width:80px}

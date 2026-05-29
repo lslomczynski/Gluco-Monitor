@@ -111,20 +111,7 @@ document.getElementById('form').onsubmit = function(e) {
 function init() {
   GH('version', Version);
   GH('version2', Version);
-  // Fetch sensor type to set correct label on the Data nav link
-  fetch('/ajaxGlycemie')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.sensorType === 1) {
-        document.getElementById('menuBrute').setAttribute('data-i18n', 'dataDexcom');
-      } else {
-        document.getElementById('menuBrute').setAttribute('data-i18n', 'dataLibreview');
-      }
-      SetTraduction();
-    })
-    .catch(function() {
-      SetTraduction();
-    });
+  SetTraduction();
 }
 </script>
 </body>

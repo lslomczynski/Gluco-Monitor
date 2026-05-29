@@ -17,7 +17,9 @@
 | **Units** | mg/dL or mmol/L (user-selectable) |
 | **Thresholds** | Configurable target range, warning levels, gauge scale |
 | **Languages** | English, Français, Deutsch, Español, Italiano, Polski |
-| **Web dashboard** | Real-time view at `http://<device-ip>/` from any browser on your network |
+| **Web dashboard** | Real-time view at `http://<device-ip>/` from any browser on your network; dark-themed unified navigation across all pages |
+| **Web configuration** | Full device configuration at `http://<device-ip>/Settings` — sensor credentials, display settings, glucose thresholds, layout, brightness, MQTT — no cable or on-screen keyboard needed |
+| **Home Assistant** | MQTT auto-discovery: screen on/off switch, brightness controls, layout selector; state published as retained JSON; configurable via `/Settings` |
 | **OTA updates** | Firmware update via web interface — no cable needed |
 | **First-boot setup** | On-screen wizard **or** Wi-Fi AP captive portal (mobile-friendly) |
 | **Persistence** | All settings saved to LittleFS — survive power cycles |
@@ -96,7 +98,7 @@ On first power-on (no Wi-Fi configured), the device offers two setup methods:
 | **Dexcom** | Dexcom Share | Username + password + region (US / Non-US / JP) |
 | **NightScout** | REST API v1 | URL + access token (token optional for public instances) |
 
-Switch between sensors at any time in the **Account** screen. Glucose history is cleared automatically when switching sources.
+Switch between sensors at any time in the **Account** screen or via the `/Settings` web page. Glucose history is cleared automatically when switching sources.
 
 ---
 
@@ -116,18 +118,61 @@ A 400 ms touch-suppression window is applied after every layout or page transiti
 
 ## 🌐 Web Dashboard
 
-Open `http://<device-ip>/` from any browser on the same Wi-Fi network for a real-time glucose view.
+Open `http://<device-ip>/` from any browser on the same Wi-Fi network for a real-time glucose view. All pages share a unified dark-theme design with a common navigation bar (Glucose | Settings | Data | Update | Restart | Erase).
 
 Key endpoints:
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /` | Main dashboard |
+| `GET /` | Main dashboard — real-time glucose, trend, history chart |
+| `GET /Settings` | Full device configuration UI (requires on-device authorization) |
+| `GET /ajaxSettings` | Current device config as JSON (no passwords) |
+| `POST /saveSettings` | Apply configuration changes immediately |
+| `POST /testConnection` | Test sensor credentials from the browser |
 | `GET /ajaxGlycemie` | Current reading (JSON, polled by UI) |
 | `GET /dataGly` | 8-hour glucose history (binary blob) |
+| `GET /Brute` | Collapsible JSON data view with syntax highlighting |
 | `GET /OTA` | OTA firmware upload (requires on-device authorization) |
-| `GET /Restart` | Restart the device |
+| `GET /Restart` | Restart confirmation page |
+| `POST /Restart` | Trigger actual device reboot |
 | `GET /eraseConfig` | Erase all saved configuration and restart |
+
+---
+
+## 🏠 Home Assistant / MQTT Integration
+
+Gluco-Monitor supports **MQTT auto-discovery** for Home Assistant. Once configured, the device publishes its state and registers four entities automatically — no manual YAML configuration needed.
+
+### Setup
+
+1. Open `http://<device-ip>/Settings` in your browser (requires on-device authorization)
+2. Scroll to the **MQTT** section
+3. Enter broker address, port (default 1883), and optional credentials
+4. Click **Test Connection** to verify
+5. Click **Save** — the device connects and publishes discovery messages immediately
+
+### Topics
+
+| Topic | Direction | Description |
+|-------|-----------|-------------|
+| `gluco_monitor/<MAC6>/state` | Device → HA | Retained JSON: `screen`, `brightness`, `brightness_night`, `layout` |
+| `gluco_monitor/<MAC6>/cmd/screen` | HA → Device | `ON` / `OFF` — turn display on or off |
+| `gluco_monitor/<MAC6>/cmd/brightness` | HA → Device | `0–255` — daytime backlight level |
+| `gluco_monitor/<MAC6>/cmd/brightness_night` | HA → Device | `0–255` — night-mode backlight level |
+| `gluco_monitor/<MAC6>/cmd/layout` | HA → Device | `0` Normal / `1` altView_01 / `2` altView_02 |
+
+`<MAC6>` is the last 6 hex digits of the device's Wi-Fi MAC address (e.g. `A1B2C3`).
+
+### Discovered Entities
+
+| Entity | HA type | Notes |
+|--------|---------|-------|
+| Screen | `switch` | Maps to display on/off |
+| Brightness | `number` | Daytime backlight (0–255) |
+| Brightness night | `number` | Night-mode backlight (0–255) |
+| Layout | `select` | Normal / altView_01 / altView_02 |
+
+The device auto-reconnects with a 5-second back-off if the broker becomes unavailable.
 
 ---
 
@@ -166,7 +211,8 @@ src/
 ├── Libreview.cpp         # FreeStyle Libre API client
 ├── Dexcom.cpp            # Dexcom Share API client
 ├── NightScout.cpp        # NightScout REST API client
-├── Server.cpp            # AsyncWebServer (port 80)
+├── Server.cpp            # AsyncWebServer (port 80) — all HTTP endpoints
+├── MQTT.cpp              # MQTT client: HA Discovery, state publish, command handling
 ├── Heure.cpp             # NTP time sync, timezone, brightness control
 ├── Ecran/
 │   ├── Gestion.cpp       # Display driver init, touch, page routing
@@ -178,6 +224,10 @@ src/
 │   └── page*.cpp         # Other configuration screens
 ├── Langues/              # Language strings as JSON (en/fr/de/es/it/pl)
 └── HTML/                 # Embedded web assets (C string literals in .h files)
+    ├── pageSettings.h    # /Settings — full browser-based device configuration
+    ├── pageBrute.h       # /Brute — collapsible JSON data viewer
+    ├── pageOTA.h         # /OTA — firmware update
+    └── pageMain.h        # / and /Restart pages
 ```
 
 Pages 0–2 are the rotating home / config / messages trio. Pages 10+ are fixed full-screen pages defined in `Ecran/Gestion.h`. Add new pages by creating a `page*.h/.cpp` pair and a `#define` constant.
