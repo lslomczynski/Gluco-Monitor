@@ -17,11 +17,11 @@
 | 📐 **Units** | mg/dL or mmol/L (user-selectable) |
 | 🎯 **Thresholds** | Configurable target range, warning levels, gauge scale |
 | 🌐 **Languages** | English, Français, Deutsch, Español, Italiano, Polski |
-| 📊 **Web dashboard** | Real-time view at `http://<device-ip>/` from any browser on your network; dark-themed unified navigation across all pages |
-| ⚙️ **Web configuration** | Full device configuration at `http://<device-ip>/Settings` — sensor credentials, display settings, glucose thresholds, layout, brightness, MQTT — no cable or on-screen keyboard needed |
+| 📊 **Dashboard** | Real-time view at `http://<device-ip>/` from any browser on your network; dark-themed unified navigation across all pages |
+| ⚙️ **Web config** | Full device configuration at `http://<device-ip>/Settings` — sensor credentials, display settings, glucose thresholds, layout, brightness, MQTT — no cable or on-screen keyboard needed |
 | 🏠 **Home Assistant** | MQTT auto-discovery: screen on/off switch, brightness controls, layout selector; state published as retained JSON; configurable via `/Settings` |
 | 🔄 **OTA updates** | Firmware update via web interface — no cable needed |
-| 🚀 **First-boot setup** | On-screen wizard **or** Wi-Fi AP captive portal (mobile-friendly) |
+| 🚀 **First-boot** | On-screen wizard **or** Wi-Fi AP captive portal (mobile-friendly) |
 | 💾 **Persistence** | All settings saved to LittleFS — survive power cycles |
 | 💰 **Cost** | ~$25 USD for components |
 
