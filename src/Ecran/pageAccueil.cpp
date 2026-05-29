@@ -328,6 +328,7 @@ void AccueilHandleTouch(uint16_t x, uint16_t y)
 
     if (x >= hitX1 && x <= hitX2 && y >= hitY1 && y <= hitY2) {
         viewMode = (viewMode + 1) % 3;  // 0 → 1 → 2 → 0
+        needsMqttStatePublish = true;
         SuppressTouch(); // prevent ghost-tap on the new layout
     }
 }

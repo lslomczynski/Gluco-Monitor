@@ -104,6 +104,13 @@ void DeserializeConfiguration(String json) {
   targetHigh      = conf["targetHigh"]      | targetHigh;
   glucoseWarn     = conf["glucoseWarn"]     | glucoseWarn;
   glucoseRangeMax = conf["glucoseRangeMax"] | glucoseRangeMax;
+
+  // MQTT configuration
+  mqttBroker   = conf["mqttBroker"]   | mqttBroker;
+  mqttPort     = conf["mqttPort"]     | mqttPort;
+  mqttUser     = conf["mqttUser"]     | mqttUser;
+  mqttPassword = conf["mqttPassword"] | mqttPassword;
+  mqttEnabled  = conf["mqttEnabled"]  | mqttEnabled;
 }
 
 String SerializeConfiguration() {
@@ -142,7 +149,14 @@ String SerializeConfiguration() {
   conf["targetHigh"]      = targetHigh;
   conf["glucoseWarn"]     = glucoseWarn;
   conf["glucoseRangeMax"] = glucoseRangeMax;
-  
+
+  // MQTT configuration
+  conf["mqttBroker"]   = mqttBroker;
+  conf["mqttPort"]     = mqttPort;
+  conf["mqttUser"]     = mqttUser;
+  conf["mqttPassword"] = mqttPassword;
+  conf["mqttEnabled"]  = mqttEnabled;
+
   String Json;
   serializeJson(conf, Json);
   return Json;

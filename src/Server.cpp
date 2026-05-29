@@ -23,6 +23,7 @@
 #include "HTML/JS_Commun.js.h"
 #include "HTML/JS_Main.js.h"
 #include "Ecran/pageAutBrute.h"
+#include "MQTT.h"
 #include "Langues/Langue.h"
 #include "Heure.h"
 #include "Langues/en.h"
@@ -114,6 +115,11 @@ void Init_Server()
                 doc["glucoseWarn"]     = glucoseWarn;
                 doc["glucoseRangeMax"] = glucoseRangeMax;
                 doc["viewMode"]        = viewMode;
+                doc["mqttEnabled"]     = mqttEnabled;
+                doc["mqttBroker"]      = mqttBroker;
+                doc["mqttPort"]        = mqttPort;
+                doc["mqttUser"]        = mqttUser;
+                // mqttPassword intentionally omitted
                 String json;
                 serializeJson(doc, json);
                 request->send(200, "application/json", json); });
@@ -151,6 +157,7 @@ void Init_Server()
                 if (request->hasParam("LuminositeNuit", true)) {
                     LuminositeNuit = request->getParam("LuminositeNuit", true)->value().toInt();
                     ledcWrite(GFX_BL, LuminositeNuit);
+                    currentBrightness = LuminositeNuit;
                 }
                 if (request->hasParam("LaLangue", true)) {
                     int8_t newLang = (int8_t)request->getParam("LaLangue", true)->value().toInt();
@@ -176,6 +183,13 @@ void Init_Server()
                 if (request->hasParam("targetHigh",      true)) targetHigh      = request->getParam("targetHigh",      true)->value().toInt();
                 if (request->hasParam("glucoseWarn",     true)) glucoseWarn     = request->getParam("glucoseWarn",     true)->value().toInt();
                 if (request->hasParam("glucoseRangeMax", true)) glucoseRangeMax = request->getParam("glucoseRangeMax", true)->value().toInt();
+                // MQTT settings
+                if (request->hasParam("mqttEnabled", true))
+                    mqttEnabled = request->getParam("mqttEnabled", true)->value().toInt() != 0;
+                if (request->hasParam("mqttBroker", true)) { mqttBroker = request->getParam("mqttBroker", true)->value(); mqttBroker.trim(); }
+                if (request->hasParam("mqttPort",   true)) mqttPort = (uint16_t)request->getParam("mqttPort", true)->value().toInt();
+                if (request->hasParam("mqttUser",   true)) { mqttUser = request->getParam("mqttUser", true)->value(); mqttUser.trim(); }
+                if (request->hasParam("mqttPass",   true)) mqttPassword = request->getParam("mqttPass", true)->value();
 
                 RecordFichierParametres();
                 String resp = restartNeeded
@@ -348,6 +362,32 @@ void Init_Server()
 
       String json = String("{\"ok\":") + (ok ? "true" : "false") + ",\"msg\":\"" + msg + "\"}";
       request->send(200, "application/json", json);
+  });
+
+  server.on("/testMqtt", HTTP_POST, [](AsyncWebServerRequest *request) {
+      if (!AutorisationPageBrute) {
+          request->send(403, "application/json", "{\"ok\":false,\"msg\":\"Unauthorized\"}");
+          return;
+      }
+      String broker = mqttBroker;
+      uint16_t port = mqttPort;
+      String user   = mqttUser;
+      String pass   = mqttPassword;
+      if (request->hasParam("mqttBroker", true)) { broker = request->getParam("mqttBroker", true)->value(); broker.trim(); }
+      if (request->hasParam("mqttPort",   true)) port = (uint16_t)request->getParam("mqttPort", true)->value().toInt();
+      if (request->hasParam("mqttUser",   true)) { user = request->getParam("mqttUser", true)->value(); user.trim(); }
+      if (request->hasParam("mqttPass",   true)) {
+          String v = request->getParam("mqttPass", true)->value();
+          if (v.length() > 0) pass = v;
+      }
+      if (broker.length() == 0) {
+          request->send(200, "application/json", "{\"ok\":false,\"msg\":\"Broker address is empty\"}");
+          return;
+      }
+      bool ok = testMqttConnection(broker, port, user, pass);
+      String msg = ok ? "MQTT broker connected" : "Could not connect to broker";
+      request->send(200, "application/json",
+          String("{\"ok\":") + (ok ? "true" : "false") + ",\"msg\":\"" + msg + "\"}");
   });
 
   server.on("/Restart", HTTP_GET, [](AsyncWebServerRequest *request)

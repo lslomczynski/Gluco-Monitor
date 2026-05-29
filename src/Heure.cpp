@@ -121,13 +121,13 @@ void FormatteHeureDate()
   Int_Minute = timeinfo.tm_min;
   Jour = timeinfo.tm_wday; //-1=inconnu,0=dimanche,1=lundi...
   T_On_seconde = esp_timer_get_time() / 1000000; //Timer en microseconde sur 64 bits
-  if (Int_Heure < 7 || Int_Heure >= 21)
-  {
-    ledcWrite(GFX_BL, LuminositeNuit); // Baisser la luminosité la nuit ?????????????????????????????
-  }
-  else
-  {
-    ledcWrite(GFX_BL, 255); // Luminosité maximale le jour
+  if (!mqttScreenOff) {
+    int16_t newBrightness = (Int_Heure < 7 || Int_Heure >= 21) ? LuminositeNuit : 255;
+    if (newBrightness != currentBrightness) {
+      ledcWrite(GFX_BL, newBrightness);
+      currentBrightness = newBrightness;
+      needsMqttStatePublish = true;
+    }
   }
 
 }

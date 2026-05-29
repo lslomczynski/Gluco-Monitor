@@ -63,7 +63,6 @@ input[type=number]{width:auto;text-align:center;min-width:80px}
 #status{display:none;text-align:center;padding:10px;border-radius:6px;margin-top:12px;font-weight:bold}
 .ok{background:#1a3a1a;color:#6f6;border:1px solid #3a5a3a}
 .err{background:#3a1a1a;color:#f66;border:1px solid #5a3a3a}
-.mqtt-soon{color:#666;font-style:italic;text-align:center;padding:10px 0;font-size:.9em}
 .ver{text-align:center;color:#444;font-size:.78em;margin-top:10px;padding-bottom:16px}
 </style>
 </head>
@@ -200,9 +199,9 @@ input[type=number]{width:auto;text-align:center;min-width:80px}
   </select>
   <label>Night screen brightness</label>
   <div class="radio-row">
-    <label><input type="radio" name="LuminositeNuit" value="15"> 10%</label>
-    <label><input type="radio" name="LuminositeNuit" value="40"> 25%</label>
-    <label><input type="radio" name="LuminositeNuit" value="100"> 50%</label>
+    <label><input type="radio" name="LuminositeNuit" value="26"> 10%</label>
+    <label><input type="radio" name="LuminositeNuit" value="64"> 25%</label>
+    <label><input type="radio" name="LuminositeNuit" value="128"> 50%</label>
     <label><input type="radio" name="LuminositeNuit" value="255"> 100%</label>
   </div>
 </div>
@@ -262,10 +261,25 @@ input[type=number]{width:auto;text-align:center;min-width:80px}
   </p>
 </div>
 
-<!-- Home Assistant / MQTT (placeholder) -->
+<!-- Home Assistant / MQTT -->
 <div class="section">
   <h2>Home Assistant / MQTT</h2>
-  <p class="mqtt-soon">MQTT integration — coming soon</p>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <label style="margin:0;color:#eee;font-size:.95em;cursor:pointer" for="mqttEnabled">Enable MQTT</label>
+    <input type="checkbox" id="mqttEnabled" style="width:auto;min-width:0;cursor:pointer">
+  </div>
+  <label>Broker address / IP</label>
+  <input type="text" id="mqttBroker" placeholder="192.168.1.x or hostname" autocomplete="off">
+  <label>Port</label>
+  <input type="number" id="mqttPort" value="1883" min="1" max="65535">
+  <label>Username <span style="color:#555">(leave blank for anonymous)</span></label>
+  <input type="text" id="mqttUser" autocomplete="off">
+  <label>Password <span style="color:#555">(leave blank to keep current)</span></label>
+  <input type="password" id="mqttPass" placeholder="(unchanged)" autocomplete="new-password">
+  <div class="test-sep">
+    <button class="btn-test" onclick="testMqtt()">Test Connection</button>
+    <div id="mqttTestResult" style="font-size:.85em;margin-top:8px;min-height:1.2em"></div>
+  </div>
 </div>
 
 <div class="btn-row">
@@ -332,7 +346,7 @@ function updateBar(rMin,tLow,tHigh,warn,rMax){
 
 // Match LuminositeNuit value to nearest radio button (15/40/100/255)
 function nearestLum(v){
-  var opts=[15,40,100,255];
+  var opts=[26,64,128,255];
   var best=opts[0];
   var bestD=Math.abs(v-best);
   for(var i=1;i<opts.length;i++){
@@ -367,6 +381,10 @@ function init(){
       document.getElementById('glucoseWarn').value=d.glucoseWarn||300;
       document.getElementById('glucoseRangeMax').value=d.glucoseRangeMax||400;
       validate();
+      document.getElementById('mqttEnabled').checked=!!d.mqttEnabled;
+      document.getElementById('mqttBroker').value=d.mqttBroker||'';
+      document.getElementById('mqttPort').value=d.mqttPort||1883;
+      document.getElementById('mqttUser').value=d.mqttUser||'';
     })
     .catch(function(){showStatus('Could not load current settings.','err');});
 }
@@ -399,6 +417,12 @@ function doSave(){
   p.append('targetHigh',document.getElementById('targetHigh').value);
   p.append('glucoseWarn',document.getElementById('glucoseWarn').value);
   p.append('glucoseRangeMax',document.getElementById('glucoseRangeMax').value);
+  p.append('mqttEnabled',document.getElementById('mqttEnabled').checked?'1':'0');
+  p.append('mqttBroker',document.getElementById('mqttBroker').value.trim());
+  p.append('mqttPort',document.getElementById('mqttPort').value);
+  p.append('mqttUser',document.getElementById('mqttUser').value.trim());
+  var mp=document.getElementById('mqttPass').value;
+  if(mp) p.append('mqttPass',mp);
 
   fetch('/saveSettings',{method:'POST',
     headers:{'Content-Type':'application/x-www-form-urlencoded'},
@@ -451,6 +475,30 @@ function testConn(){
     .catch(function(){
       el.style.color='#f88';
       el.textContent='Connection test failed (network error).';
+    });
+}
+
+function testMqtt(){
+  var el=document.getElementById('mqttTestResult');
+  el.style.color='#aaa';
+  el.textContent='Testing… (may take a few seconds)';
+  var p=new URLSearchParams();
+  p.append('mqttBroker',document.getElementById('mqttBroker').value.trim());
+  p.append('mqttPort',document.getElementById('mqttPort').value);
+  p.append('mqttUser',document.getElementById('mqttUser').value.trim());
+  var pw=document.getElementById('mqttPass').value;
+  if(pw) p.append('mqttPass',pw);
+  fetch('/testMqtt',{method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:p.toString()})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      el.style.color=d.ok?'#6f6':'#f88';
+      el.textContent=d.msg||(d.ok?'Connected':'Failed');
+    })
+    .catch(function(){
+      el.style.color='#f88';
+      el.textContent='Test failed (network error).';
     });
 }
 

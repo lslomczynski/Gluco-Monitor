@@ -48,6 +48,7 @@ v3.2 : Correction du mapping des flèches de tendance Dexcom
 #include "Ecran/pageInfos.h"
 #include "Ecran/pageFuseauH.h"
 #include "Langues/Langue.h"
+#include "MQTT.h"
 
 static unsigned long testWatchdog = 0;
 
@@ -119,6 +120,7 @@ void setup()
   // First-boot path (ssid empty): Init_Internet() enters a blocking loop;
   // Init_Server() is called from StartAPMode() after the AP is configured.
   Init_Server();
+  if (mqttEnabled) initMqtt();
   LireSerial();
 
   //  ========Modification du programme par le Wifi  - OTA(On The Air) ================
@@ -178,10 +180,16 @@ void loop()
     FormatteHeureDate();
   }
   loopEcran();
+  loopMqtt();
 
   if (needsConfigRedraw) {
     needsConfigRedraw = false;
     ParaInit();
+    publishMqttState();
+  }
+  if (needsMqttStatePublish) {
+    needsMqttStatePublish = false;
+    publishMqttState();
   }
 
   //== Tests si fonctionnement nominal ============

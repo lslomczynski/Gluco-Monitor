@@ -65,16 +65,16 @@ void handleTouch_Affichage(uint16_t touchX, uint16_t touchY)
             switch (i)
             {
             case 0:
-                LuminositeNuit = 15;
+                LuminositeNuit = 26;   // 10%
                 break;
             case 1:
-                LuminositeNuit = 40;
+                LuminositeNuit = 64;   // 25%
                 break;
             case 2:
-                LuminositeNuit = 100;
+                LuminositeNuit = 128;  // 50%
                 break;
             case 3:
-                LuminositeNuit = 255;
+                LuminositeNuit = 255;  // 100%
                 break;
             case 4:
                 rotation = 1;
@@ -94,6 +94,8 @@ void handleTouch_Affichage(uint16_t touchX, uint16_t touchY)
             if (i < 4)
             {
                 ledcWrite(GFX_BL, LuminositeNuit);
+                currentBrightness = LuminositeNuit;
+                needsMqttStatePublish = true;
                 delay(1000);
             }
             if (oldRotation!=rotation){
@@ -106,7 +108,7 @@ void handleTouch_Affichage(uint16_t touchX, uint16_t touchY)
 }
 void DrawBoutons()
 {
-    int16_t Seuil[4] = {15, 40, 100, 255};
+    int16_t Seuil[4] = {26, 64, 128, 255};
     for (int i = 0; i < 4; i++)
     {
         Rboutons[i].X0 = EcranW * (i * 3 + 2) / 13-20;

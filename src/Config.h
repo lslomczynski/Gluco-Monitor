@@ -48,6 +48,14 @@ extern String dexcomRegion;
 extern String nightscoutUrl;
 extern String nightscoutToken;
 
+// MQTT configuration
+extern String mqttBroker;
+extern uint16_t mqttPort;
+extern String mqttUser;
+extern String mqttPassword;
+extern bool mqttEnabled;
+extern bool mqttScreenOff;
+
 // Sensor selection
 extern SensorType sensorType;
 
@@ -77,6 +85,7 @@ extern GlucoseColor glucoseColor;
 extern String ES, FS, GS, RS, US;
 
 extern int16_t LuminositeNuit;
+extern int16_t currentBrightness;
 // Home screen layout: 0=Default (gauge+bar chart), 1=Gauge only (altView_01), 2=Value only (altView_02)
 extern int8_t viewMode;
 
@@ -92,6 +101,8 @@ extern EXT_RAM_BSS_ATTR String LoginJSON, GraphJSON, ConnectionJSON;
 
 // Set to true to trigger a redraw of the on-screen config menu (e.g. after language change)
 extern bool needsConfigRedraw;
+// Set to true to publish MQTT state on the next loop() iteration
+extern bool needsMqttStatePublish;
 
 // Clear all data (glucose, Dexcom cache, LibreView cache) when switching accounts
 void clearData();

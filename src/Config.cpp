@@ -26,6 +26,14 @@ String dexcomRegion = "Non-US"; // Default to "Non-US" region
 String nightscoutUrl   = "";
 String nightscoutToken = "";
 
+// MQTT configuration
+String mqttBroker   = "";
+uint16_t mqttPort   = 1883;
+String mqttUser     = "";
+String mqttPassword = "";
+bool mqttEnabled    = false;
+bool mqttScreenOff  = false;
+
 // Sensor selection
 SensorType sensorType = SENSOR_LIBRE; // Default to FreeStyle Libre
 
@@ -73,9 +81,11 @@ String RS = String((char)30); // Record Separator
 String US = String((char)31); // Unit Separator
 
 int16_t LuminositeNuit=255; //Maximum
+int16_t currentBrightness=255;
 int8_t viewMode = 0;
 
 bool SetupEnCours=true;
+bool needsMqttStatePublish=false;
 
 //======= Page HTML Brute ============
 bool AutorisationPageBrute=false;
