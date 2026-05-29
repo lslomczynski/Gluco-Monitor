@@ -12,18 +12,18 @@
 
 | Category | Details |
 |----------|---------|
-| **Data sources** | FreeStyle Libre (LibreLinkUp API), Dexcom Share, NightScout REST API |
-| **Display** | Real-time glucose value, trend arrow, age indicator, 8-hour bar chart; tap the glucose value to cycle through three layouts: Normal (bar chart), large gauge (altView_01), and colour-coded full-screen (altView_02) |
-| **Units** | mg/dL or mmol/L (user-selectable) |
-| **Thresholds** | Configurable target range, warning levels, gauge scale |
-| **Languages** | English, Français, Deutsch, Español, Italiano, Polski |
-| **Web dashboard** | Real-time view at `http://<device-ip>/` from any browser on your network; dark-themed unified navigation across all pages |
-| **Web configuration** | Full device configuration at `http://<device-ip>/Settings` — sensor credentials, display settings, glucose thresholds, layout, brightness, MQTT — no cable or on-screen keyboard needed |
-| **Home Assistant** | MQTT auto-discovery: screen on/off switch, brightness controls, layout selector; state published as retained JSON; configurable via `/Settings` |
-| **OTA updates** | Firmware update via web interface — no cable needed |
-| **First-boot setup** | On-screen wizard **or** Wi-Fi AP captive portal (mobile-friendly) |
-| **Persistence** | All settings saved to LittleFS — survive power cycles |
-| **Cost** | ~$25 USD for components |
+| 📡 **Data sources** | FreeStyle Libre (LibreLinkUp API), Dexcom Share, NightScout REST API |
+| 🖥️ **Display** | Real-time glucose value, trend arrow, age indicator, 8-hour bar chart; tap the glucose value to cycle through three layouts: Normal (bar chart), large gauge (altView_01), and colour-coded full-screen (altView_02) |
+| 📐 **Units** | mg/dL or mmol/L (user-selectable) |
+| 🎯 **Thresholds** | Configurable target range, warning levels, gauge scale |
+| 🌐 **Languages** | English, Français, Deutsch, Español, Italiano, Polski |
+| 📊 **Web dashboard** | Real-time view at `http://<device-ip>/` from any browser on your network; dark-themed unified navigation across all pages |
+| ⚙️ **Web configuration** | Full device configuration at `http://<device-ip>/Settings` — sensor credentials, display settings, glucose thresholds, layout, brightness, MQTT — no cable or on-screen keyboard needed |
+| 🏠 **Home Assistant** | MQTT auto-discovery: screen on/off switch, brightness controls, layout selector; state published as retained JSON; configurable via `/Settings` |
+| 🔄 **OTA updates** | Firmware update via web interface — no cable needed |
+| 🚀 **First-boot setup** | On-screen wizard **or** Wi-Fi AP captive portal (mobile-friendly) |
+| 💾 **Persistence** | All settings saved to LittleFS — survive power cycles |
+| 💰 **Cost** | ~$25 USD for components |
 
 ---
 
@@ -31,13 +31,13 @@
 
 | Component | Specification |
 |-----------|---------------|
-| Microcontroller | **ESP32-S3** (esp32-s3-devkitc-1) |
-| Flash | 16 MB QIO |
-| PSRAM | OPI mode |
-| Display | **320×480 AXS15231B** TFT touchscreen |
-| Touch | I2C controller (address 0x3B) |
-| Wi-Fi | 802.11 b/g/n (built-in) |
-| Power | USB or battery |
+| 🔲 **Microcontroller** | **ESP32-S3** (esp32-s3-devkitc-1) |
+| 🗄️ **Flash** | 16 MB QIO |
+| 🧠 **PSRAM** | OPI mode |
+| 📺 **Display** | **320×480 AXS15231B** TFT touchscreen |
+| 👆 **Touch** | I2C controller (address 0x3B) |
+| 📶 **Wi-Fi** | 802.11 b/g/n (built-in) |
+| ⚡ **Power** | USB or battery |
 
 👉 Full hardware assembly guide: **https://f1atb.fr/gluco-monitor-diy/**
 
