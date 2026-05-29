@@ -101,6 +101,10 @@ void setup()
     LangueNonDefini=true;
   }
   InitEcran();
+  if (nightScheduleDisabled) {          // MQTT/HA owns brightness — restore saved level
+      ledcWrite(GFX_BL, LuminositeNuit);
+      currentBrightness = LuminositeNuit;
+  }
   LireSerial();
   // ===== Definition de la langue si non encore definie ====
   // Skip if ssid is also empty — WiFi setup takes priority on first boot;
