@@ -314,12 +314,17 @@ void AccueilHandleTouch(uint16_t x, uint16_t y)
         return; // no reading — nothing to toggle
 
     // Hit zone over the glucose value
-    // Normal:    inb63 Sz=1 → 63 px,  baseline y=185, top≈122
+    // Normal:     inb63 Sz=1 → 63 px,  baseline y=185, top≈122
     // altView_01: inb49 Sz=2 → 98 px,  baseline y=290, top≈192
-    // altView_02: inb49 Sz=4 → 196 px, baseline y=290, top≈94  (same hit zone as altView_01 for simplicity)
-    uint16_t hitX1 = 100, hitX2 = 380;
-    uint16_t hitY1 = (viewMode == 0) ? 110 : 187;
-    uint16_t hitY2 = (viewMode == 0) ? 200 : 295;
+    // altView_02: inb49 Sz=3 → ~147 px, baseline y=250, top≈103; centred at x=240
+    uint16_t hitX1, hitX2, hitY1, hitY2;
+    if (viewMode == 0) {
+        hitX1 = 100; hitX2 = 380; hitY1 = 110; hitY2 = 200;
+    } else if (viewMode == 1) {
+        hitX1 = 100; hitX2 = 380; hitY1 = 187; hitY2 = 295;
+    } else {
+        hitX1 = 60; hitX2 = 420; hitY1 = 95; hitY2 = 260;
+    }
 
     if (x >= hitX1 && x <= hitX2 && y >= hitY1 && y <= hitY2) {
         viewMode = (viewMode + 1) % 3;  // 0 → 1 → 2 → 0

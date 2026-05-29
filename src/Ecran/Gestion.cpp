@@ -139,8 +139,18 @@ void loopEcran()
     // Lecture du Touché
     //===========================
 
+    // Track total displacement from touch-start for swipe detection.
+    // Per-frame delta (DeltaTouchX) is noisy near screen edges and can trigger
+    // accidental swipes during a tap; total displacement stays near zero for taps.
+    static bool  swipePrevValid = false;
+    static uint16_t swipeOriginX = 0;
+
     if (getTouchPoint(touchX, touchY, DeltaTouchX, DeltaTouchY))
     {
+      if (!swipePrevValid) swipeOriginX = touchX; // first frame of new touch
+      swipePrevValid = true;
+      int16_t totalDX = (int16_t)touchX - (int16_t)swipeOriginX;
+
       // Suppress all touch input for PAGE_CHANGE_DEBOUNCE_MS after any page
       // transition — lets the user lift their finger before the new page reacts.
       if ((millis() - LastPageChangeMillis) < PAGE_CHANGE_DEBOUNCE_MS)
@@ -151,15 +161,17 @@ void loopEcran()
       //===============
       { // Touché  Pages tournantes
         //=================
-        if (DeltaTouchX < -50)
+        if (totalDX < -50)
         {
           PageActu = (PageOld + 1) % PageTotalTournante;
           PageDelta = 480; // Delta en pixels
+          swipeOriginX = touchX; // reset so next page needs another 50 px
         }
-        if (DeltaTouchX > 50)
+        if (totalDX > 50)
         {
           PageActu = (PageTotalTournante + PageOld - 1) % PageTotalTournante;
           PageDelta = -480; // Delta en pixels
+          swipeOriginX = touchX; // reset so next page needs another 50 px
         }
         if (PageDelta == 0) // On attend la stabilisation du touché pour éviter les actions intempestives
         {
@@ -248,6 +260,7 @@ void loopEcran()
     //=================
     { // Pas de click touché.
       //=================
+      swipePrevValid = false;
       ClickLong = millis();
     }
     //===========================
@@ -366,8 +379,10 @@ bool getTouchPoint(uint16_t &x, uint16_t &y, int16_t &dX, int16_t &dY)
           y = rawY;
           break;
         case 1:
-          y = map(rawX, 0, 320, 320, 0);
-          x = rawY;
+          // Clamp: rawX slightly above 320 gives negative mapped y which wraps
+          // around as uint16_t, causing hit-zone misses near the top of the screen.
+          y = (uint16_t)constrain(map(rawX, 0, 320, 320, 0), 0L, 319L);
+          x = min(rawY, (uint16_t)479);
           break;
         case 2:
           x = map(rawX, 0, 320, 320, 0);
