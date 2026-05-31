@@ -82,6 +82,7 @@ String US = String((char)31); // Unit Separator
 
 int16_t LuminositeNuit=255;
 int16_t LuminositeJour=255;
+int16_t LuminositeCourante=255;
 int8_t nightStartHour = 21;
 int8_t nightStartMin  = 0;
 int8_t nightEndHour   = 7;

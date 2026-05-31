@@ -101,9 +101,9 @@ void setup()
     LangueNonDefini=true;
   }
   InitEcran();
-  if (nightScheduleDisabled) {          // MQTT/HA owns brightness — restore saved level
-      ledcWrite(GFX_BL, LuminositeNuit);
-      currentBrightness = LuminositeNuit;
+  if (nightScheduleDisabled) {          // MQTT/HA owns brightness — restore last known level
+      ledcWrite(GFX_BL, LuminositeCourante);
+      currentBrightness = LuminositeCourante;
   }
   LireSerial();
   // ===== Definition de la langue si non encore definie ====

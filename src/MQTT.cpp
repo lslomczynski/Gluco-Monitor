@@ -118,12 +118,13 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
     for (unsigned int i = 0; i < length; i++) msg += (char)payload[i];
 
     if (t.endsWith("/cmd/brightness")) {
-        // Live override — no save to flash, no effect on schedule variables
         int16_t val = pctToLevel(msg.toInt());
+        LuminositeCourante = val;
         if (!mqttScreenOff) {
             ledcWrite(GFX_BL, val);
             currentBrightness = val;
         }
+        RecordFichierParametres();
         publishMqttState();
     } else if (t.endsWith("/cmd/brightness_day")) {
         LuminositeJour = pctToLevel(msg.toInt());
@@ -142,7 +143,8 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
             bool isNight = (startMin > endMin)
                 ? (nowMin >= startMin || nowMin < endMin)
                 : (nowMin >= startMin && nowMin < endMin);
-            int16_t val = (!nightScheduleDisabled && isNight) ? LuminositeNuit : LuminositeJour;
+            int16_t val = nightScheduleDisabled ? LuminositeCourante
+                        : (isNight ? LuminositeNuit : LuminositeJour);
             ledcWrite(GFX_BL, val);
             currentBrightness = val;
         } else {
