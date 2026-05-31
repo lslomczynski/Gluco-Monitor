@@ -24,10 +24,10 @@ static String baseTopic() {
 }
 
 static int16_t pctToLevel(int pct) {
-    return (int16_t)map(constrain(pct, 0, 100), 0, 100, 0, 255);
+    return (int16_t)((constrain(pct, 0, 100) * 255 + 50) / 100);
 }
 static int levelToPct(int16_t level) {
-    return (int)map((long)level, 0, 255, 0, 100);
+    return (int)((level * 100 + 127) / 255);
 }
 
 static String layoutName() {
