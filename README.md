@@ -18,8 +18,8 @@
 | 🎯 **Thresholds** | Configurable target range, warning levels, gauge scale |
 | 🌐 **Languages** | English, Français, Deutsch, Español, Italiano, Polski |
 | 📊 **Dashboard** | Real-time view at `http://<device-ip>/` from any browser on your network; dark-themed unified navigation across all pages |
-| ⚙️ **Web config** | Full device configuration at `http://<device-ip>/Settings` — sensor credentials, display settings, glucose thresholds, layout, brightness, MQTT — no cable or on-screen keyboard needed |
-| 🏠 **Home Assistant** | MQTT auto-discovery: screen on/off switch, brightness controls, layout selector; state published as retained JSON; configurable via `/Settings` |
+| ⚙️ **Web config** | Full device configuration at `http://<device-ip>/Settings` — sensor credentials, display settings, glucose thresholds, layout, day/night brightness schedule, MQTT — no cable or on-screen keyboard needed |
+| 🏠 **Home Assistant** | MQTT auto-discovery: screen on/off switch, day/night brightness + schedule toggle, layout selector; state published as retained JSON; configurable via `/Settings` |
 | 🔄 **OTA updates** | Firmware update via web interface — no cable needed |
 | 🚀 **First-boot** | On-screen wizard **or** Wi-Fi AP captive portal (mobile-friendly) |
 | 💾 **Persistence** | All settings saved to LittleFS — survive power cycles |
@@ -155,11 +155,13 @@ Gluco-Monitor supports **MQTT auto-discovery** for Home Assistant. Once configur
 
 | Topic | Direction | Description |
 |-------|-----------|-------------|
-| `gluco_monitor/<MAC6>/state` | Device → HA | Retained JSON: `screen`, `brightness`, `brightness_night`, `layout` |
+| `gluco_monitor/<MAC6>/state` | Device → HA | Retained JSON: `screen`, `brightness`, `brightness_day`, `brightness_night`, `night_schedule_disabled`, `layout` |
 | `gluco_monitor/<MAC6>/cmd/screen` | HA → Device | `ON` / `OFF` — turn display on or off |
-| `gluco_monitor/<MAC6>/cmd/brightness` | HA → Device | `0–255` — daytime backlight level |
-| `gluco_monitor/<MAC6>/cmd/brightness_night` | HA → Device | `0–255` — night-mode backlight level |
-| `gluco_monitor/<MAC6>/cmd/layout` | HA → Device | `0` Normal / `1` altView_01 / `2` altView_02 |
+| `gluco_monitor/<MAC6>/cmd/brightness` | HA → Device | `0–100` (%) — live override; not saved, does not affect the schedule |
+| `gluco_monitor/<MAC6>/cmd/brightness_day` | HA → Device | `0–100` (%) — day brightness used by the on-device schedule |
+| `gluco_monitor/<MAC6>/cmd/brightness_night` | HA → Device | `0–100` (%) — night brightness used by the on-device schedule |
+| `gluco_monitor/<MAC6>/cmd/night_schedule` | HA → Device | `ON` / `OFF` — enable or disable the on-device brightness schedule |
+| `gluco_monitor/<MAC6>/cmd/layout` | HA → Device | `"Default"` / `"Gauge only"` / `"Value only"` |
 
 `<MAC6>` is the last 6 hex digits of the device's Wi-Fi MAC address (e.g. `A1B2C3`).
 
@@ -168,9 +170,10 @@ Gluco-Monitor supports **MQTT auto-discovery** for Home Assistant. Once configur
 | Entity | HA type | Notes |
 |--------|---------|-------|
 | Screen | `switch` | Maps to display on/off |
-| Brightness | `number` | Daytime backlight (0–255) |
-| Brightness night | `number` | Night-mode backlight (0–255) |
-| Layout | `select` | Normal / altView_01 / altView_02 |
+| Brightness | `number` | Live override 0–100 %; not persisted, does not affect the schedule |
+| Day Brightness | `number` | Day-mode schedule backlight level (0–100 %) |
+| Night Brightness | `number` | Night-mode schedule backlight level (0–100 %) |
+| Layout | `select` | Default / Gauge only / Value only |
 
 The device auto-reconnects with a 5-second back-off if the broker becomes unavailable.
 

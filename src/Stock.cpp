@@ -75,6 +75,7 @@ void DeserializeConfiguration(String json) {
   librePass = conf["librePass"].as<String>();
   libreZone = conf["libreZone"].as<String>();
   LuminositeNuit        = conf["LuminositeNuit"]        | LuminositeNuit;
+  LuminositeJour        = conf["LuminositeJour"]        | LuminositeJour;
   nightStartHour        = conf["nightStartHour"]        | nightStartHour;
   nightStartMin         = conf["nightStartMin"]          | nightStartMin;
   nightEndHour          = conf["nightEndHour"]           | nightEndHour;
@@ -130,6 +131,7 @@ String SerializeConfiguration() {
   conf["librePass"] = librePass;
   conf["libreZone"] = libreZone;
   conf["LuminositeNuit"]        = LuminositeNuit;
+  conf["LuminositeJour"]        = LuminositeJour;
   conf["nightStartHour"]        = nightStartHour;
   conf["nightStartMin"]         = nightStartMin;
   conf["nightEndHour"]          = nightEndHour;

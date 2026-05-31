@@ -129,7 +129,7 @@ void FormatteHeureDate()
     bool isNight = (startMin > endMin)
         ? (nowMin >= startMin || nowMin < endMin)
         : (nowMin >= startMin && nowMin < endMin);
-    int16_t newBrightness = isNight ? LuminositeNuit : 255;
+    int16_t newBrightness = isNight ? LuminositeNuit : LuminositeJour;
     if (newBrightness != currentBrightness) {
       ledcWrite(GFX_BL, newBrightness);
       currentBrightness = newBrightness;

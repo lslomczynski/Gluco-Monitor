@@ -47,6 +47,7 @@ void publishMqttState() {
     if (!mqttClient.connected()) return;
     String state = String("{\"screen\":\"") + (mqttScreenOff ? "OFF" : "ON") + "\""
         + ",\"brightness\":"              + levelToPct(currentBrightness)
+        + ",\"brightness_day\":"          + levelToPct(LuminositeJour)
         + ",\"brightness_night\":"        + levelToPct(LuminositeNuit)
         + ",\"night_schedule_disabled\":" + (nightScheduleDisabled ? "true" : "false")
         + ",\"layout\":\"" + layoutName() + "\"}";
@@ -84,6 +85,14 @@ static void publishDiscovery() {
         "\"val_tpl\":\"{{ value_json.brightness }}\","
         "\"min\":0,\"max\":100,\"unit_of_measurement\":\"%\"}");
 
+    pub("number", "brightness_day",
+        "{\"name\":\"Day Brightness\",\"unique_id\":\"" + devId + "_brightness_day\","
+        + dev + ","
+        "\"cmd_t\":\"" + base + "/cmd/brightness_day\","
+        "\"stat_t\":\"" + base + "/state\","
+        "\"val_tpl\":\"{{ value_json.brightness_day }}\","
+        "\"min\":0,\"max\":100,\"unit_of_measurement\":\"%\"}");
+
     pub("number", "brightness_night",
         "{\"name\":\"Night Brightness\",\"unique_id\":\"" + devId + "_brightness_night\","
         + dev + ","
@@ -108,12 +117,20 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
     String msg;
     for (unsigned int i = 0; i < length; i++) msg += (char)payload[i];
 
-    if (t.endsWith("/cmd/brightness") || t.endsWith("/cmd/brightness_night")) {
-        LuminositeNuit = pctToLevel(msg.toInt());
+    if (t.endsWith("/cmd/brightness")) {
+        // Live override — no save to flash, no effect on schedule variables
+        int16_t val = pctToLevel(msg.toInt());
         if (!mqttScreenOff) {
-            ledcWrite(GFX_BL, LuminositeNuit);
-            currentBrightness = LuminositeNuit;
+            ledcWrite(GFX_BL, val);
+            currentBrightness = val;
         }
+        publishMqttState();
+    } else if (t.endsWith("/cmd/brightness_day")) {
+        LuminositeJour = pctToLevel(msg.toInt());
+        RecordFichierParametres();
+        publishMqttState();
+    } else if (t.endsWith("/cmd/brightness_night")) {
+        LuminositeNuit = pctToLevel(msg.toInt());
         RecordFichierParametres();
         publishMqttState();
     } else if (t.endsWith("/cmd/screen")) {
@@ -125,7 +142,7 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
             bool isNight = (startMin > endMin)
                 ? (nowMin >= startMin || nowMin < endMin)
                 : (nowMin >= startMin && nowMin < endMin);
-            int16_t val = (!nightScheduleDisabled && isNight) ? LuminositeNuit : 255;
+            int16_t val = (!nightScheduleDisabled && isNight) ? LuminositeNuit : LuminositeJour;
             ledcWrite(GFX_BL, val);
             currentBrightness = val;
         } else {
@@ -156,6 +173,7 @@ static bool mqttConnect() {
     if (ok) {
         String base = baseTopic();
         mqttClient.subscribe((base + "/cmd/brightness").c_str());
+        mqttClient.subscribe((base + "/cmd/brightness_day").c_str());
         mqttClient.subscribe((base + "/cmd/brightness_night").c_str());
         mqttClient.subscribe((base + "/cmd/screen").c_str());
         mqttClient.subscribe((base + "/cmd/layout").c_str());

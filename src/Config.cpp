@@ -80,7 +80,8 @@ String GS = String((char)29); // Group Separator
 String RS = String((char)30); // Record Separator
 String US = String((char)31); // Unit Separator
 
-int16_t LuminositeNuit=255; //Maximum
+int16_t LuminositeNuit=255;
+int16_t LuminositeJour=255;
 int8_t nightStartHour = 21;
 int8_t nightStartMin  = 0;
 int8_t nightEndHour   = 7;

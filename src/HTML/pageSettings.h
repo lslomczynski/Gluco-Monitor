@@ -198,12 +198,21 @@ input[type=number]{width:auto;text-align:center;min-width:80px}
     <option value="3">Portrait flipped (3)</option>
   </select>
   <div id="nightBrightnessSection" style="margin-top:14px">
-    <label style="margin-top:0">Night screen brightness</label>
-    <div class="radio-row">
-      <label><input type="radio" name="LuminositeNuit" value="26"> 10%</label>
-      <label><input type="radio" name="LuminositeNuit" value="64"> 25%</label>
-      <label><input type="radio" name="LuminositeNuit" value="128"> 50%</label>
-      <label><input type="radio" name="LuminositeNuit" value="255"> 100%</label>
+    <div style="display:flex;gap:20px;margin-bottom:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:140px">
+        <label style="margin-top:0">Day screen brightness</label>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <input type="number" id="LuminositeJourPct" min="10" max="100" step="10" style="width:72px;min-width:0">
+          <span style="color:#eee">%</span>
+        </div>
+      </div>
+      <div style="flex:1;min-width:140px">
+        <label style="margin-top:0">Night screen brightness</label>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <input type="number" id="LuminositeNuitPct" min="10" max="100" step="10" style="width:72px;min-width:0">
+          <span style="color:#eee">%</span>
+        </div>
+      </div>
     </div>
     <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap">
       <div style="flex:1;min-width:140px">
@@ -303,10 +312,10 @@ input[type=number]{width:auto;text-align:center;min-width:80px}
   <div style="margin-top:14px">
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
       <input type="checkbox" id="nightScheduleDisabled" style="width:auto;min-width:0;cursor:pointer">
-      <span style="color:#eee;font-size:.95em">Disable built-in night screen brightness schedule</span>
+      <span style="color:#eee;font-size:.95em">Disable built-in screen brightness schedule</span>
     </label>
     <p style="font-style:italic;color:#888;font-size:.82em;margin:6px 0 0 26px">
-      Disable to avoid conflicts between MQTT commands (e.g. Home Assistant automations) and the on-device time-based schedule.
+      Disable to avoid conflicts between MQTT commands (e.g. Home Assistant automations) and the on-device time-based brightness schedule.
     </p>
   </div>
 </div>
@@ -379,17 +388,8 @@ function setNightSectionDisabled(dis){
   s.style.pointerEvents=dis?'none':'';
 }
 
-// Match LuminositeNuit value to nearest radio button (15/40/100/255)
-function nearestLum(v){
-  var opts=[26,64,128,255];
-  var best=opts[0];
-  var bestD=Math.abs(v-best);
-  for(var i=1;i<opts.length;i++){
-    var d=Math.abs(v-opts[i]);
-    if(d<bestD){bestD=d;best=opts[i];}
-  }
-  return best;
-}
+function pwmToPct(v){return Math.max(10,Math.min(100,Math.round(Math.round(v/255*100)/10)*10));}
+function pctToPwm(p){return Math.round(p/100*255);}
 
 function init(){
   document.getElementById('version').textContent=Version;
@@ -409,7 +409,8 @@ function init(){
       sel('glucoseColor',d.glucoseColor||0);
       sel('viewMode',d.viewMode||0);
       sel('rotation',d.rotation||1);
-      selRadio('LuminositeNuit', nearestLum(d.LuminositeNuit||255));
+      document.getElementById('LuminositeJourPct').value=pwmToPct(d.LuminositeJour||255);
+      document.getElementById('LuminositeNuitPct').value=pwmToPct(d.LuminositeNuit||255);
       document.getElementById('nightStartHour').value=d.nightStartHour!=null?d.nightStartHour:21;
       document.getElementById('nightStartMin').value=d.nightStartMin!=null?d.nightStartMin:0;
       document.getElementById('nightEndHour').value=d.nightEndHour!=null?d.nightEndHour:7;
@@ -433,7 +434,6 @@ function init(){
 
 function doSave(){
   var st=document.querySelector('input[name="sensorType"]:checked');
-  var lum=document.querySelector('input[name="LuminositeNuit"]:checked');
   var p=new URLSearchParams();
   p.append('sensorType',st?st.value:'0');
   p.append('libreEmail',document.getElementById('libreEmail').value.trim());
@@ -453,7 +453,8 @@ function doSave(){
   p.append('glucoseColor',document.getElementById('glucoseColor').value);
   p.append('viewMode',document.getElementById('viewMode').value);
   p.append('rotation',document.getElementById('rotation').value);
-  p.append('LuminositeNuit',lum?lum.value:'255');
+  p.append('LuminositeJour',pctToPwm(parseInt(document.getElementById('LuminositeJourPct').value)||100));
+  p.append('LuminositeNuit',pctToPwm(parseInt(document.getElementById('LuminositeNuitPct').value)||100));
   p.append('nightStartHour',document.getElementById('nightStartHour').value);
   p.append('nightStartMin',document.getElementById('nightStartMin').value);
   p.append('nightEndHour',document.getElementById('nightEndHour').value);

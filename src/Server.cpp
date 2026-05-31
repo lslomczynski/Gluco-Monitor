@@ -105,6 +105,7 @@ void Init_Server()
                 doc["nightscoutUrl"]   = nightscoutUrl;
                 doc["glucoseUnit"]     = (int)glucoseUnit;
                 doc["glucoseColor"]    = (int)glucoseColor;
+                doc["LuminositeJour"]        = LuminositeJour;
                 doc["LuminositeNuit"]        = LuminositeNuit;
                 doc["nightStartHour"]        = nightStartHour;
                 doc["nightStartMin"]         = nightStartMin;
@@ -159,6 +160,8 @@ void Init_Server()
                 // Display settings
                 if (request->hasParam("glucoseUnit",  true)) glucoseUnit  = (GlucoseUnit)request->getParam("glucoseUnit",  true)->value().toInt();
                 if (request->hasParam("glucoseColor", true)) glucoseColor = (GlucoseColor)request->getParam("glucoseColor", true)->value().toInt();
+                if (request->hasParam("LuminositeJour", true))
+                    LuminositeJour = request->getParam("LuminositeJour", true)->value().toInt();
                 if (request->hasParam("LuminositeNuit", true))
                     LuminositeNuit = request->getParam("LuminositeNuit", true)->value().toInt();
                 if (request->hasParam("nightStartHour", true))
@@ -538,6 +541,7 @@ void Init_Server()
                 if (request->hasParam("targetHigh",      true)) targetHigh    =            request->getParam("targetHigh",      true)->value().toInt();
                 if (request->hasParam("glucoseWarn",     true)) glucoseWarn   =            request->getParam("glucoseWarn",     true)->value().toInt();
                 if (request->hasParam("glucoseRangeMax", true)) glucoseRangeMax =           request->getParam("glucoseRangeMax", true)->value().toInt();
+                if (request->hasParam("LuminositeJour",  true)) LuminositeJour  =           request->getParam("LuminositeJour",  true)->value().toInt();
                 if (request->hasParam("LuminositeNuit",  true)) LuminositeNuit  =           request->getParam("LuminositeNuit",  true)->value().toInt();
                 if (request->hasParam("nightStartHour",  true)) nightStartHour  = (int8_t)  request->getParam("nightStartHour",  true)->value().toInt();
                 if (request->hasParam("nightStartMin",   true)) nightStartMin   = (int8_t)  request->getParam("nightStartMin",   true)->value().toInt();

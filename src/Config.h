@@ -85,6 +85,7 @@ extern GlucoseColor glucoseColor;
 extern String ES, FS, GS, RS, US;
 
 extern int16_t LuminositeNuit;
+extern int16_t LuminositeJour;
 extern int8_t nightStartHour;
 extern int8_t nightStartMin;
 extern int8_t nightEndHour;
