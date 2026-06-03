@@ -109,10 +109,10 @@ void CompteSetup()
         int radioX2 = radioX1 + 83 + 20 + 8;
         int radioX3 = radioX2 + 48 + 20 + 8;
 
+        CanvaBase->setFont(u8g2_font_helvR14_tf);
         CanvaBase->fillCircle(radioX1, radioY, radioR, RGB565_WHITE);
         CanvaBase->fillCircle(radioX1, radioY, radioR - 3,
             (dexcomRegion != "US" && dexcomRegion != "JP") ? RGB565_GREEN : RGB565_NAVY);
-        CanvaBase->setFont(u8g2_font_helvB14_tf);
         CanvaBase->setCursor(radioX1 + textOffset, radioY + 5);
         CanvaBase->print("Non-US");
 
@@ -133,7 +133,25 @@ void CompteSetup()
         PrintCentre(CanvaBase, T("Compte") + " NightScout", EcranW / 2, 95, 1);
         drawPara(T("NightScoutURL"),   nightscoutUrl,   110, 1);
         drawPara(T("NightScoutToken"), nightscoutToken, 170, 2);
-        // No third field (no region selector needed for NightScout)
+
+        // Update interval radio buttons (1 / 2 / 5 min)
+        CanvaBase->setFont(u8g2_font_helvB14_tf);
+        CanvaBase->fillRoundRect(7, 230, EcranW - 14, 50, 8, RGB565_NAVY);
+        CanvaBase->drawRoundRect(7, 230, EcranW - 14, 50, 8, RGB565_WHITE);
+        PrintCentre(CanvaBase, T("NightScoutInterval"), EcranW2, 250, 1);
+
+        const int16_t iVals[3]   = {1, 2, 5};
+        const char*   iLabels[3] = {"1 min", "2 min", "5 min"};
+        const int16_t rY = 268, rR = 8;
+        CanvaBase->setFont(u8g2_font_helvR14_tf);
+        for (int i = 0; i < 3; i++) {
+            int16_t rX = EcranW * (i * 2 + 1) / 6;
+            CanvaBase->fillCircle(rX, rY, rR, RGB565_WHITE);
+            CanvaBase->fillCircle(rX, rY, rR - 3,
+                (nightscoutIntervalMin == iVals[i]) ? RGB565_GREEN : RGB565_NAVY);
+            CanvaBase->setCursor(rX + rR + 4, rY + 5);
+            CanvaBase->print(iLabels[i]);
+        }
     }
 
     Bouton_Trace(Boutons[4]); // Test button
@@ -193,6 +211,22 @@ void handleTouch_Compte(uint16_t touchX, uint16_t touchY)
         else if (sensorType == SENSOR_DEXCOM)      PageActu = pageClavier_DexcomPwd;
         else                                        PageActu = pageClavier_NightScoutToken;
         setup_clavier();
+    }
+    // --- NightScout interval radio buttons (Y=230..280) ---
+    else if (sensorType == SENSOR_NIGHTSCOUT && touchY >= 230 && touchY <= 280)
+    {
+        const int16_t iVals[3] = {1, 2, 5};
+        for (int i = 0; i < 3; i++) {
+            int16_t rX = EcranW * (i * 2 + 1) / 6;
+            if (abs((int)touchX - (int)rX) < 50) {
+                if (nightscoutIntervalMin != iVals[i]) {
+                    nightscoutIntervalMin = iVals[i];
+                    RecordFichierParametres();
+                    CompteSetup();
+                }
+                return;
+            }
+        }
     }
     // --- Dexcom region radio buttons (Y=230..280) ---
     else if (sensorType == SENSOR_DEXCOM && touchY >= 230 && touchY <= 280)

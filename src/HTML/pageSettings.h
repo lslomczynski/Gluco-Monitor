@@ -129,6 +129,12 @@ input[type=number]{width:auto;text-align:center;min-width:80px}
     <input type="text" id="nightscoutUrl" placeholder="https://your-ns.example.com" autocomplete="off">
     <label>Access token <span style="color:#555">(leave blank to keep current)</span></label>
     <input type="password" id="nightscoutToken" placeholder="(unchanged)" autocomplete="new-password">
+    <label>Update interval</label>
+    <div class="radio-row">
+      <label><input type="radio" name="nightscoutIntervalMin" value="1"> 1 min</label>
+      <label><input type="radio" name="nightscoutIntervalMin" value="2"> 2 min</label>
+      <label><input type="radio" name="nightscoutIntervalMin" value="5"> 5 min</label>
+    </div>
   </div>
   <div class="test-sep">
     <button class="btn-test" onclick="testConn()">Test Connection</button>
@@ -403,6 +409,7 @@ function init(){
       document.getElementById('dexcomUsername').value=d.dexcomUsername||'';
       sel('dexcomRegion',d.dexcomRegion||'Non-US');
       document.getElementById('nightscoutUrl').value=d.nightscoutUrl||'';
+      selRadio('nightscoutIntervalMin',d.nightscoutIntervalMin||5);
       sel('LaLangue',d.LaLangue||0);
       sel('idxFuseau',d.idxFuseau||0);
       sel('glucoseUnit',d.glucoseUnit||0);
@@ -447,6 +454,8 @@ function doSave(){
   p.append('nightscoutUrl',document.getElementById('nightscoutUrl').value.trim());
   var nt=document.getElementById('nightscoutToken').value;
   if(nt) p.append('nightscoutToken',nt);
+  var nsi=document.querySelector('input[name="nightscoutIntervalMin"]:checked');
+  if(nsi) p.append('nightscoutIntervalMin',nsi.value);
   p.append('LaLangue',document.getElementById('LaLangue').value);
   p.append('idxFuseau',document.getElementById('idxFuseau').value);
   p.append('glucoseUnit',document.getElementById('glucoseUnit').value);

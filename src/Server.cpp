@@ -102,7 +102,8 @@ void Init_Server()
                 doc["libreZone"]       = libreZone;
                 doc["dexcomUsername"]  = dexcomUsername;
                 doc["dexcomRegion"]    = dexcomRegion;
-                doc["nightscoutUrl"]   = nightscoutUrl;
+                doc["nightscoutUrl"]          = nightscoutUrl;
+                doc["nightscoutIntervalMin"]  = nightscoutIntervalMin;
                 doc["glucoseUnit"]     = (int)glucoseUnit;
                 doc["glucoseColor"]    = (int)glucoseColor;
                 doc["LuminositeJour"]        = LuminositeJour;
@@ -157,6 +158,8 @@ void Init_Server()
                 // NightScout credentials
                 if (request->hasParam("nightscoutUrl",   true)) { nightscoutUrl = request->getParam("nightscoutUrl", true)->value(); nightscoutUrl.trim(); }
                 if (request->hasParam("nightscoutToken", true)) nightscoutToken = request->getParam("nightscoutToken", true)->value();
+                if (request->hasParam("nightscoutIntervalMin", true))
+                    nightscoutIntervalMin = (int8_t)request->getParam("nightscoutIntervalMin", true)->value().toInt();
                 // Display settings
                 if (request->hasParam("glucoseUnit",  true)) glucoseUnit  = (GlucoseUnit)request->getParam("glucoseUnit",  true)->value().toInt();
                 if (request->hasParam("glucoseColor", true)) glucoseColor = (GlucoseColor)request->getParam("glucoseColor", true)->value().toInt();

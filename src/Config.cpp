@@ -23,8 +23,9 @@ String dexcomPassword = "";
 String dexcomRegion = "Non-US"; // Default to "Non-US" region
 
 // NightScout configuration
-String nightscoutUrl   = "";
-String nightscoutToken = "";
+String nightscoutUrl      = "";
+String nightscoutToken    = "";
+int8_t nightscoutIntervalMin = 5;
 
 // MQTT configuration
 String mqttBroker   = "";

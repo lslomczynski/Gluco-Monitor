@@ -47,6 +47,7 @@ extern String dexcomRegion;
 // NightScout configuration
 extern String nightscoutUrl;
 extern String nightscoutToken;
+extern int8_t nightscoutIntervalMin; // 1, 2, or 5
 
 // MQTT configuration
 extern String mqttBroker;

@@ -91,8 +91,9 @@ void DeserializeConfiguration(String json) {
   dexcomRegion = conf["dexcomRegion"] | dexcomRegion;
 
   // NightScout configuration
-  nightscoutUrl   = conf["nightscoutUrl"]   | nightscoutUrl;
-  nightscoutToken = conf["nightscoutToken"] | nightscoutToken;
+  nightscoutUrl         = conf["nightscoutUrl"]          | nightscoutUrl;
+  nightscoutToken       = conf["nightscoutToken"]        | nightscoutToken;
+  nightscoutIntervalMin = conf["nightscoutIntervalMin"]  | nightscoutIntervalMin;
   
   // Sensor type
   int sensorTypeInt = conf["sensorType"] | SENSOR_LIBRE;
@@ -148,8 +149,9 @@ String SerializeConfiguration() {
   conf["dexcomRegion"]   = dexcomRegion;
 
   // NightScout configuration
-  conf["nightscoutUrl"]   = nightscoutUrl;
-  conf["nightscoutToken"] = nightscoutToken;
+  conf["nightscoutUrl"]          = nightscoutUrl;
+  conf["nightscoutToken"]        = nightscoutToken;
+  conf["nightscoutIntervalMin"]  = nightscoutIntervalMin;
   
   // Sensor type
   conf["sensorType"] = (int) sensorType;

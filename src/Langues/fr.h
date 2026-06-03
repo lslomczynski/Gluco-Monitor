@@ -108,6 +108,7 @@ inline const char *LangFR = R"====(
   "NightScoutIndefini":"Compte NightScout non défini",
   "SetNightScout":"Définir les paramètres NightScout",
   "NightScoutURL":"URL NightScout",
-  "NightScoutToken":"Jeton d'accès"
+  "NightScoutToken":"Jeton d'accès",
+  "NightScoutInterval":"Intervalle de mise à jour"
 }
 )====";

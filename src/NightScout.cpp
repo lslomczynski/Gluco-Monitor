@@ -187,25 +187,25 @@ void LectureNightScout()
         return;
     }
 
-    // NightScout CGM updates every 5 minutes; poll slightly later to avoid a race.
-    recurGlycMillis = 315000; // 5 min 15 s
+    long intervalSec = (long)nightscoutIntervalMin * 60L + 15L; // +15 s margin
+    recurGlycMillis  = (unsigned long)intervalSec * 1000UL;
 
-    if (AgeGlycemie < 315 && lastGlyUnixTime > 0) {
-        // Recent data — no need to poll yet.
+    // Shorten only when data is genuinely stale: no new reading for 2+ full intervals
+    if (AgeGlycemie > intervalSec * 2L) {
+        recurGlycMillis = 90000;
+    }
+
+    // Timer-based guard (same pattern as LibreLinkUp): wait full recurGlycMillis
+    // since last reception regardless of sensor-side data age — this ensures the
+    // progress bar always fills to 100% before the next poll.
+    if (millis() - lastReceptionGlycMillis < recurGlycMillis && lastDemandeGlycMillis != 0) {
         return;
     }
-    if (AgeGlycemie > 500) {
-        recurGlycMillis = 90000;  // 1.5 min if data is very stale
-    } else if (AgeGlycemie > 315) {
-        recurGlycMillis = 30000;  // 30 s if we just missed an update
-    }
 
-    if (millis() - lastReceptionGlycMillis > recurGlycMillis || lastDemandeGlycMillis == 0) {
-        lastDemandeGlycMillis = millis();
-        Serial.println("Requesting NightScout glucose...");
-        getNightScoutReadings();
-        lastReceptionGlycMillis = millis();
-    }
+    lastDemandeGlycMillis = millis();
+    Serial.println("Requesting NightScout glucose...");
+    getNightScoutReadings();
+    lastReceptionGlycMillis = millis();
 }
 
 // NightScout is stateless (JWT token in URL, no server-side session).

@@ -108,6 +108,7 @@ inline const char *LangIT = R"====(
   "NightScoutIndefini":"Account NightScout non definito",
   "SetNightScout":"Impostare i parametri NightScout",
   "NightScoutURL":"URL NightScout",
-  "NightScoutToken":"Token di accesso"
+  "NightScoutToken":"Token di accesso",
+  "NightScoutInterval":"Intervallo di aggiornamento"
 }
 )====";
