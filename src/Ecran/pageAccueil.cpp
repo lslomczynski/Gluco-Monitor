@@ -221,8 +221,8 @@ void AccueiLoop()
         int secondes = AgeGlycemie % 60;
         char buffer[10];
         sprintf(buffer, "%d:%02d", minutes, secondes);
-        if (minutes >= 10) CanvaAccueil->setTextColor(RGB565_ORANGE);
-        if (minutes >= 15) CanvaAccueil->setTextColor(RGB565_RED);
+        if (minutes >= 10 && viewMode != 2) CanvaAccueil->setTextColor(RGB565_ORANGE);
+        if (minutes >= 15 && viewMode != 2) CanvaAccueil->setTextColor(RGB565_RED);
         PrintDroite(CanvaAccueil, String(buffer), EcranW, EcranH / 3, 1);
     }
     else
