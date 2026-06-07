@@ -23,6 +23,7 @@
 #include "HTML/JS_Commun.js.h"
 #include "HTML/JS_Main.js.h"
 #include "Ecran/pageAutBrute.h"
+#include "Ecran/Gestion.h"
 #include "MQTT.h"
 #include "Langues/Langue.h"
 #include "Heure.h"
@@ -37,6 +38,7 @@
 static AsyncWebServer server(80);
 
 uint8_t MonBuffer[4 + MAX_POINTS * 6]; // Pour les tableaux de glycemie
+static uint8_t *bmpScreenshotBuf = nullptr;
 // Prototypes
 void notFound(AsyncWebServerRequest *request);
 void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final);
@@ -61,6 +63,7 @@ static void scheduleRestart(uint32_t delayMs)
 
 void Init_Server()
 {
+  bmpScreenshotBuf = (uint8_t *)heap_caps_malloc(66 + 320 * 480 * 2, MALLOC_CAP_SPIRAM);
 
   // Main Page
   //*********
@@ -554,6 +557,56 @@ void Init_Server()
                 request->send(200, "text/plain", "OK");
                 scheduleRestart(500); // Non-blocking restart after response is sent
             });
+
+  server.on("/Screenshot", HTTP_GET, [](AsyncWebServerRequest *request) {
+      if (!bmpScreenshotBuf) { request->send(503, "text/plain", "Out of memory"); return; }
+      uint32_t pixBytes = (uint32_t)EcranW * EcranH * 2;
+      uint32_t fileSize = 66 + pixBytes;
+      uint8_t *p = bmpScreenshotBuf;
+
+      // BITMAPFILEHEADER (14 bytes)
+      p[0] = 'B'; p[1] = 'M';
+      *(uint32_t *)(p + 2)  = fileSize;
+      *(uint16_t *)(p + 6)  = 0;
+      *(uint16_t *)(p + 8)  = 0;
+      *(uint32_t *)(p + 10) = 66; // pixel data offset
+
+      // BITMAPINFOHEADER (40 bytes)
+      p += 14;
+      *(uint32_t *)(p + 0)  = 40;
+      *(int32_t  *)(p + 4)  = EcranW;
+      *(int32_t  *)(p + 8)  = -EcranH; // negative height = top-down storage
+      *(uint16_t *)(p + 12) = 1;
+      *(uint16_t *)(p + 14) = 16;
+      *(uint32_t *)(p + 16) = 3;        // BI_BITFIELDS
+      *(uint32_t *)(p + 20) = pixBytes;
+      *(uint32_t *)(p + 24) = 0;
+      *(uint32_t *)(p + 28) = 0;
+      *(uint32_t *)(p + 32) = 0;
+      *(uint32_t *)(p + 36) = 0;
+
+      // RGB565 channel masks (12 bytes)
+      p += 40;
+      *(uint32_t *)(p + 0) = 0xF800; // R
+      *(uint32_t *)(p + 4) = 0x07E0; // G
+      *(uint32_t *)(p + 8) = 0x001F; // B
+
+      // rotation=1: framebuffer stored as 480 rows × 320 cols (physW=EcranH=320).
+      // Screen pixel (sx, sy) is at fb[sx * physW + (physW - 1 - sy)].
+      const int32_t physW = EcranH; // 320
+      const uint16_t *fb = (const uint16_t *)CanvaBase->getFramebuffer();
+      uint16_t *out = (uint16_t *)(bmpScreenshotBuf + 66);
+      for (int32_t sy = 0; sy < EcranH; sy++) {
+          for (int32_t sx = 0; sx < EcranW; sx++) {
+              out[sy * EcranW + sx] = fb[sx * physW + (physW - 1 - sy)];
+          }
+      }
+
+      AsyncWebServerResponse *response = request->beginResponse(
+          200, "image/bmp", bmpScreenshotBuf, fileSize);
+      response->addHeader("Content-Disposition", "inline; filename=\"screenshot.bmp\"");
+      request->send(response);
+  });
 
   server.onNotFound(notFound);
 
