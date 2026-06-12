@@ -153,11 +153,11 @@ void AccueiLoop()
         // Needle — Normal and altView_01 only (not altView_02)
         if (viewMode != 2) {
             float Trad = float(Teta0) * 3.14f / 180.0f;
-            int16_t R0n = (int16_t)(0.8f * R0); // needle base radius — separate from gauge ring radius
+            int16_t R0n = (int16_t)(0.94f * R0); // needle base radius — separate from gauge ring radius
             CanvaAccueil->fillTriangle(
                 W2 + R1  * cos(Trad), C + R1  * sin(Trad),
-                W2 + R0n * cos(Trad - 0.2f), C + R0n * sin(Trad - 0.2f),
-                W2 + R0n * cos(Trad + 0.2f), C + R0n * sin(Trad + 0.2f),
+                W2 + R0n * cos(Trad - 0.15f), C + R0n * sin(Trad - 0.15f),
+                W2 + R0n * cos(Trad + 0.15f), C + R0n * sin(Trad + 0.15f),
                 glucoseInfoColor);
         }
 
