@@ -63,6 +63,10 @@ ul{list-style-type:none;padding-left:20px;margin:0}
     <h2 id="sec3Title" style="color:#8af;font-size:.95em;margin-bottom:10px;border-bottom:1px solid #2a2a4a;padding-bottom:6px"></h2>
     <div id="GraphJSON"></div>
   </div>
+  <div class="section">
+    <h2 style="color:#8af;font-size:.95em;margin-bottom:10px;border-bottom:1px solid #2a2a4a;padding-bottom:6px">Diagnostics</h2>
+    <div id="DiagJSON"></div>
+  </div>
   <div class="ver">Version: <span id="version"></span></div>
 </main>
 
@@ -175,6 +179,7 @@ function Init() {
         loadSection('/ConnectionJSON', 'ConnectionJSON');
       }
       loadSection('/GraphJSON', 'GraphJSON');
+      loadSection('/ajaxDiag', 'DiagJSON');
     })
     .catch(function() {
       // Fallback: show Libre layout, load all sections
@@ -186,6 +191,7 @@ function Init() {
       loadSection('/LoginJSON', 'LoginJSON');
       loadSection('/ConnectionJSON', 'ConnectionJSON');
       loadSection('/GraphJSON', 'GraphJSON');
+      loadSection('/ajaxDiag', 'DiagJSON');
     });
 }
 </script>

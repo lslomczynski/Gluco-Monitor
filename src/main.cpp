@@ -29,6 +29,7 @@ v3.2 : Correction du mapping des flèches de tendance Dexcom
 #include <ESPmDNS.h>
 #include <ArduinoOTA.h>
 #include <esp_task_wdt.h>
+#include <esp_system.h>
 
 #include "Heure.h"
 #include "Libreview.h"
@@ -54,9 +55,65 @@ static unsigned long testWatchdog = 0;
 
 #define WDT_TIMEOUT_SECONDS 600 // Watchdog 10 minutes = 600 secondes
 
+// Decode esp_reset_reason() to a short human-readable string
+static String resetReasonToString(esp_reset_reason_t reason)
+{
+  switch (reason)
+  {
+    case ESP_RST_POWERON:   return "Power-on";
+    case ESP_RST_EXT:       return "External pin";
+    case ESP_RST_SW:        return "Software (ESP.restart)";
+    case ESP_RST_PANIC:     return "Panic/exception";
+    case ESP_RST_INT_WDT:   return "Interrupt watchdog";
+    case ESP_RST_TASK_WDT:  return "Task watchdog";
+    case ESP_RST_WDT:       return "Other watchdog";
+    case ESP_RST_DEEPSLEEP: return "Deep sleep wake";
+    case ESP_RST_BROWNOUT:  return "Brownout";
+    case ESP_RST_SDIO:      return "SDIO";
+    case ESP_RST_USB:       return "USB peripheral (flash/serial monitor)";
+    case ESP_RST_JTAG:      return "JTAG";
+    case ESP_RST_EFUSE:     return "Efuse error";
+    case ESP_RST_PWR_GLITCH:return "Power glitch";
+    case ESP_RST_CPU_LOCKUP:return "CPU lockup (double exception)";
+    default:                return "Unknown (" + String((int)reason) + ")";
+  }
+}
+
+// Decode the last restart's cause, combining esp_reset_reason() with the RTC-persisted
+// tag set by AlertePasdeGlycemie() — both can produce ESP_RST_SW, so the tag is what
+// tells the two apart. Clears the tag after reading so it doesn't leak into a future,
+// unrelated restart.
+static void LogRestartCause()
+{
+  esp_reset_reason_t reason = esp_reset_reason();
+  LastResetReasonStr = resetReasonToString(reason);
+
+  if (restartCauseTag == RESTART_TAG_NO_GLUCOSE_DATA)
+  {
+    LastRestartCauseStr = "No glucose data timeout";
+    restartCauseTag = 0;
+  }
+  else if (reason == ESP_RST_TASK_WDT || reason == ESP_RST_INT_WDT ||
+           reason == ESP_RST_WDT || reason == ESP_RST_PANIC ||
+           reason == ESP_RST_CPU_LOCKUP)
+  {
+    LastRestartCauseStr = "Watchdog/crash (" + LastResetReasonStr + ")";
+  }
+  else if (reason == ESP_RST_BROWNOUT)
+  {
+    LastRestartCauseStr = "Brownout";
+  }
+  else
+  {
+    LastRestartCauseStr = "Normal/manual restart (" + LastResetReasonStr + ")";
+  }
+  Serial.println("Last restart cause: " + LastRestartCauseStr);
+}
+
 void setup()
 {
   Serial.begin(115200);
+  LogRestartCause();
   SetupEnCours=true;
   LaLangue = LANG_NONDEF;
   //=========== Watchdog initialisation ==========

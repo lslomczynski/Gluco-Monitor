@@ -32,6 +32,21 @@ bool Liste_WIFI();
 // Guard to ensure Init_Server() is called only once (AP → Cancel → AP path)
 static bool serverStarted = false;
 
+// Logs the raw 802.11 disconnect reason code and keeps a running count, so that
+// after an unattended outage we can tell a real disconnect happened (and why),
+// without needing a serial cable attached when it occurs.
+static void onWifiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
+{
+    if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED)
+    {
+        wifiDisconnectCount++;
+        lastWifiDisconnectReason = (int16_t)info.wifi_sta_disconnected.reason;
+        lastWifiDisconnectMillis = millis();
+        Serial.printf("WiFi disconnected, reason=%d (count=%u)\n",
+                      lastWifiDisconnectReason, wifiDisconnectCount);
+    }
+}
+
 // Start Wi-Fi Access Point for first-boot configuration
 void StartAPMode()
 {
@@ -97,6 +112,7 @@ void Init_Internet()
 
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
+    WiFi.onEvent(onWifiEvent);
     WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
     bestWifi = Liste_WIFI();
@@ -133,6 +149,7 @@ void Init_Internet()
         {
             WiFi.begin(ssid.c_str(), password.c_str());
         }
+        WiFi.setSleep(false); // Disable WiFi modem power-save (experiment for intermittent-disconnect diagnosis)
 
         while (WiFi.status() != WL_CONNECTED && (millis() < 40000))
         { // Attente connexion au Wifi

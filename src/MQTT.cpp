@@ -50,7 +50,10 @@ void publishMqttState() {
         + ",\"brightness_day\":"          + levelToPct(LuminositeJour)
         + ",\"brightness_night\":"        + levelToPct(LuminositeNuit)
         + ",\"night_schedule_disabled\":" + (nightScheduleDisabled ? "true" : "false")
-        + ",\"layout\":\"" + layoutName() + "\"}";
+        + ",\"layout\":\"" + layoutName() + "\""
+        + ",\"last_restart\":\"" + LastRestartCauseStr + "\""
+        + ",\"wifi_disconnects\":" + String(wifiDisconnectCount)
+        + ",\"last_wifi_disconnect_reason\":" + String(lastWifiDisconnectReason) + "}";
     mqttClient.publish((baseTopic() + "/state").c_str(), state.c_str(), true);
 }
 

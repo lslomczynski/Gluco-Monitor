@@ -302,6 +302,19 @@ void Init_Server()
                 String Json;
                 serializeJson(doc, Json);
                 request->send(200, "application/json", Json); });
+  server.on("/ajaxDiag", HTTP_GET, [](AsyncWebServerRequest *request)
+            {JsonDocument doc;
+                doc["resetReason"] = LastResetReasonStr;
+                doc["restartCause"] = LastRestartCauseStr;
+                doc["uptimeSeconds"] = millis() / 1000;
+                doc["freeHeap"] = ESP.getFreeHeap();
+                doc["freePsram"] = ESP.getFreePsram();
+                doc["wifiRSSI"] = WiFi.RSSI();
+                doc["wifiDisconnectCount"] = wifiDisconnectCount;
+                doc["lastWifiDisconnectReason"] = lastWifiDisconnectReason;
+                String Json;
+                serializeJson(doc, Json);
+                request->send(200, "application/json", Json); });
   server.on("/dataGly", HTTP_GET, [](AsyncWebServerRequest *request)
             {
                 int16_t tailles[2]; //Pour Javascript derrier, il faut un multiple de 4 octets

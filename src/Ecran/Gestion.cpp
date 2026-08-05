@@ -628,6 +628,7 @@ void AlertePasdeGlycemie()
   PrintCentre(CanvaBase, T("NoRecentGluco"), EcranW2, EcranH2 - 10, 1);
   PrintCentre(CanvaBase, T("Restart"), EcranW2, EcranH2 + 40, 1);
   CanvaBase->flush();
+  restartCauseTag = RESTART_TAG_NO_GLUCOSE_DATA;
   delay(10000);
   ESP.restart();
 }

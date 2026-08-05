@@ -95,6 +95,14 @@ int8_t viewMode = 0;
 bool SetupEnCours=true;
 bool needsMqttStatePublish=false;
 
+//======= Restart / WiFi diagnostics ============
+RTC_NOINIT_ATTR uint32_t restartCauseTag;
+String LastResetReasonStr = "";
+String LastRestartCauseStr = "";
+uint32_t wifiDisconnectCount = 0;
+int16_t lastWifiDisconnectReason = 0;
+unsigned long lastWifiDisconnectMillis = 0;
+
 //======= Page HTML Brute ============
 bool AutorisationPageBrute=false;
 bool needsConfigRedraw=false;

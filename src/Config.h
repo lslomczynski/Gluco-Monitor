@@ -112,6 +112,19 @@ extern bool needsConfigRedraw;
 // Set to true to publish MQTT state on the next loop() iteration
 extern bool needsMqttStatePublish;
 
+//======= Restart / WiFi diagnostics ============
+// Survives resets (not power-on) — tags AlertePasdeGlycemie()'s restart so it can be
+// told apart from other ESP_RST_SW restarts (manual /Restart, OTA, erase config...).
+extern RTC_NOINIT_ATTR uint32_t restartCauseTag;
+#define RESTART_TAG_NO_GLUCOSE_DATA 0x474D4E44u // "GMND"
+
+extern String LastResetReasonStr;  // Raw esp_reset_reason(), decoded to text
+extern String LastRestartCauseStr; // Interpreted cause, computed once at boot
+
+extern uint32_t wifiDisconnectCount;
+extern int16_t lastWifiDisconnectReason; // Raw wifi_err_reason_t code (0-255)
+extern unsigned long lastWifiDisconnectMillis;
+
 // Clear all data (glucose, Dexcom cache, LibreView cache) when switching accounts
 void clearData();
 
