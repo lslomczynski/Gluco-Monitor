@@ -19,6 +19,14 @@
 
 int16_t ComSurv = 6; // Timeout sans Wifi par pas de 30s
 
+// Backoff for loopWifiReconnect() — doubles from base up to a cap on each failed
+// attempt so we stop hammering an AP that just rejected reassociation (e.g. reason
+// 208 ASSOC_COMEBACK_TIME_TOO_LONG), and resets once a connection succeeds.
+#define WIFI_RECONNECT_BACKOFF_BASE_MS 3000UL
+#define WIFI_RECONNECT_BACKOFF_MAX_MS 60000UL
+static unsigned long wifiReconnectBackoffMs = WIFI_RECONNECT_BACKOFF_BASE_MS;
+static unsigned long lastWifiReconnectAttempt = 0;
+
 // Access Point mode
 bool apModeActive = false;
 static DNSServer dnsServer;
@@ -45,6 +53,27 @@ static void onWifiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         Serial.printf("WiFi disconnected, reason=%d (count=%u)\n",
                       lastWifiDisconnectReason, wifiDisconnectCount);
     }
+    else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP)
+    {
+        // Successful (re)connect — start the next disconnect's backoff from scratch.
+        wifiReconnectBackoffMs = WIFI_RECONNECT_BACKOFF_BASE_MS;
+    }
+}
+
+// Reconnects with a growing backoff instead of the ESP32 core's default instant
+// auto-reconnect (disabled via WiFi.setAutoReconnect(false) in Init_Internet()),
+// so repeated AP rejections (e.g. reason 208 ASSOC_COMEBACK_TIME_TOO_LONG) don't
+// turn into a disconnect storm that starves the task watchdog.
+void loopWifiReconnect()
+{
+    if (WiFi.getMode() != WIFI_STA) return; // skip during AP/config-portal mode
+    if (WiFi.status() == WL_CONNECTED) return;
+    if (millis() - lastWifiReconnectAttempt < wifiReconnectBackoffMs) return;
+
+    lastWifiReconnectAttempt = millis();
+    Serial.printf("WiFi reconnect attempt (backoff was %lums)\n", wifiReconnectBackoffMs);
+    WiFi.reconnect();
+    wifiReconnectBackoffMs = min(wifiReconnectBackoffMs * 2, WIFI_RECONNECT_BACKOFF_MAX_MS);
 }
 
 // Start Wi-Fi Access Point for first-boot configuration
@@ -150,6 +179,7 @@ void Init_Internet()
             WiFi.begin(ssid.c_str(), password.c_str());
         }
         WiFi.setSleep(false); // Disable WiFi modem power-save (experiment for intermittent-disconnect diagnosis)
+        WiFi.setAutoReconnect(false); // We drive reconnects ourselves (loopWifiReconnect()) with backoff
 
         while (WiFi.status() != WL_CONNECTED && (millis() < 40000))
         { // Attente connexion au Wifi

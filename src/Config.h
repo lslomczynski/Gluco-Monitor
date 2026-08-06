@@ -121,9 +121,10 @@ extern RTC_NOINIT_ATTR uint32_t restartCauseTag;
 extern String LastResetReasonStr;  // Raw esp_reset_reason(), decoded to text
 extern String LastRestartCauseStr; // Interpreted cause, computed once at boot
 
-extern uint32_t wifiDisconnectCount;
-extern int16_t lastWifiDisconnectReason; // Raw wifi_err_reason_t code (0-255)
-extern unsigned long lastWifiDisconnectMillis;
+// Survive resets (not power-on) so evidence isn't wiped by the very crash it explains.
+extern RTC_NOINIT_ATTR uint32_t wifiDisconnectCount;
+extern RTC_NOINIT_ATTR int16_t lastWifiDisconnectReason; // Raw wifi_err_reason_t code (0-255)
+extern RTC_NOINIT_ATTR unsigned long lastWifiDisconnectMillis;
 
 // Clear all data (glucose, Dexcom cache, LibreView cache) when switching accounts
 void clearData();

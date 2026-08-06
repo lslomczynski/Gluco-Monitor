@@ -4,6 +4,7 @@
 
 void Init_Internet();
 bool Liste_WIFI();
+void loopWifiReconnect();
 
 // Access Point mode for first-boot configuration
 void StartAPMode();

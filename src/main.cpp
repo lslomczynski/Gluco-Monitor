@@ -88,6 +88,16 @@ static void LogRestartCause()
   esp_reset_reason_t reason = esp_reset_reason();
   LastResetReasonStr = resetReasonToString(reason);
 
+  // RTC memory content is undefined on a genuine cold boot — clear the RTC-resident
+  // WiFi diagnostic counters here so they don't start from garbage. Every other reset
+  // reason leaves them alone so they keep accumulating across crash reboots.
+  if (reason == ESP_RST_POWERON)
+  {
+    wifiDisconnectCount = 0;
+    lastWifiDisconnectReason = 0;
+    lastWifiDisconnectMillis = 0;
+  }
+
   if (restartCauseTag == RESTART_TAG_NO_GLUCOSE_DATA)
   {
     LastRestartCauseStr = "No glucose data timeout";
@@ -242,6 +252,7 @@ void loop()
   }
   loopEcran();
   loopMqtt();
+  loopWifiReconnect();
 
   if (needsConfigRedraw) {
     needsConfigRedraw = false;

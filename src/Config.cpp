@@ -99,9 +99,9 @@ bool needsMqttStatePublish=false;
 RTC_NOINIT_ATTR uint32_t restartCauseTag;
 String LastResetReasonStr = "";
 String LastRestartCauseStr = "";
-uint32_t wifiDisconnectCount = 0;
-int16_t lastWifiDisconnectReason = 0;
-unsigned long lastWifiDisconnectMillis = 0;
+RTC_NOINIT_ATTR uint32_t wifiDisconnectCount;
+RTC_NOINIT_ATTR int16_t lastWifiDisconnectReason;
+RTC_NOINIT_ATTR unsigned long lastWifiDisconnectMillis;
 
 //======= Page HTML Brute ============
 bool AutorisationPageBrute=false;
