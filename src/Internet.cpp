@@ -57,6 +57,11 @@ static void onWifiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
     {
         // Successful (re)connect — start the next disconnect's backoff from scratch.
         wifiReconnectBackoffMs = WIFI_RECONNECT_BACKOFF_BASE_MS;
+        // (Re)configure TZ/SNTP here rather than only at initial boot: if the boot-time
+        // connect attempt below doesn't land within its wait window, this is the only
+        // place TZ ever gets set for the rest of the run — otherwise localtime() silently
+        // falls back to UTC (no DST offset) even once WiFi later reconnects.
+        DefFuseauHoraire();
     }
 }
 
@@ -204,9 +209,8 @@ void Init_Internet()
         PointsMessage = T("ConnectedWiFi");
         PointsMessage2 = MyIP;
         PointsMessage3 = T("ou") + hostname + ".local";
-        
-        // WiFi connected — now configure NTP (requires active connection)
-        DefFuseauHoraire();
+        // TZ/SNTP configuration now happens in onWifiEvent()'s GOT_IP handler —
+        // that fires here too, and also covers reconnects after the boot window.
     }
     else
     {
